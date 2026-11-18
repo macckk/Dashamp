@@ -1,7 +1,20 @@
 # Estado do Dashamp
 
-Última tarefa concluída: **F0.3** (levantamento da máquina).
-Próxima: **F0.4** — pacotes base.
+Última tarefa concluída: **F0.4** (pacotes base).
+Próxima: **F0.5** — repositório, venv e deploy.
+
+## Pacotes base (F0.4)
+
+- Kernel antigo `6.1.0-39` removido e cache do apt limpo antes da instalação (1,6 → 1,9 GB livres);
+  o GRUB só lista o kernel atual.
+- 164 pacotes da lista do plano, sem recomendados: 326 MB. Depois: **1,6 GB livres** em `/`.
+- **Extra: `xserver-xorg-input-libinput`** (1,8 MB). Sem ele o X ignora teclado e touchpad
+  ("No input driver specified") e o app não receberia Esc/Q.
+- X: driver `intel` (915GM), saída `LVDS1` em 800×480; teclado e touchpad via libinput.
+- Pelo SSH, o X só sobe como root (usuário comum recebe "Switching VT failed"); no boot (F0.9)
+  ele sobe pelo autologin no tty1. O teste de aceite foi feito com `sudo xinit ...`.
+- Som: `speaker-test -c2 -l1` toca nos dois canais (confirmado de ouvido pelo mantenedor).
+  O mixer só tem `Master` (sem `PCM`), deixado em 80%.
 
 ## Máquina alvo (levantamento F0.3, 2026-11-18)
 

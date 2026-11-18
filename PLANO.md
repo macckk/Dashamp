@@ -54,7 +54,7 @@ Criar `docs/estado.md` com o resumo.
 **Aceite:** `docs/estado.md` informa a RAM real, o espaço livre e o kernel. Se a RAM for 512 MB,
 anotar que o orçamento de memória do app cai para 120 MB.
 
-### [ ] F0.4 Pacotes base
+### [x] F0.4 Pacotes base
 **Fazer:** `apt install` de: `rsync xserver-xorg-core xserver-xorg-video-intel xinit x11-xserver-utils
 python3-venv python3-gi gir1.2-gstreamer-1.0 gir1.2-gst-plugins-base-1.0
 gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-ugly gstreamer1.0-alsa
