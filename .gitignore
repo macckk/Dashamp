@@ -1,0 +1,17 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# Dados locais e segredos
+.env
+tmp/
+*.db
+viagens/
+
+# Skins de terceiros: nunca publicar
+player/skins_teste/
+*.wsz
+
+# Material local de trabalho (não faz parte do projeto)
+Claude outputs/
