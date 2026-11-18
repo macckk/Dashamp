@@ -21,7 +21,7 @@ Regras gerais, ciclo de deploy e pilha técnica estão em `CLAUDE.md`.
 
 **Aceite:** o repositório público mostra o README bilíngue e a licença MIT.
 
-### [ ] F0.1 `[HUMANO]` Instalar o Debian 12 i386
+### [x] F0.1 `[HUMANO]` Instalar o Debian 12 i386
 Feito pelo mantenedor (pode ocorrer antes ou depois da F0.0):
 - ISO **Debian 12 i386 netinst** (última 12.x) gravada num pendrive; Eee PC no cabo de rede.
 - Hostname `eeepc`; usuário comum com senha; senha de root vazia (assim o usuário entra no grupo `sudo`).
@@ -31,7 +31,7 @@ Feito pelo mantenedor (pode ocorrer antes ou depois da F0.0):
 
 **Aceite:** o mantenedor informa o IP e o usuário.
 
-### [ ] F0.2 Acesso SSH por chave
+### [x] F0.2 Acesso SSH por chave
 **Fazer:**
 - Gerar uma chave dedicada no PC (`~/.ssh/eeepc_ed25519`) e copiá-la com `ssh-copy-id` (o mantenedor digita a senha uma vez).
 - Adicionar ao `~/.ssh/config` do PC:
@@ -106,7 +106,7 @@ Se nenhuma atingir, **pare e reporte os números**: o plano das fases 1–3 prec
 
 **Aceite:** após `sudo reboot`, o Eee PC cai direto no bench sem intervenção.
 
-### [ ] F0.10 `[HUMANO]` Conferência visual
+### [x] F0.10 `[HUMANO]` Conferência visual
 O mantenedor olha a tela real (brilho, nitidez, fluidez do ponteiro) e confirma.
 
 ---
