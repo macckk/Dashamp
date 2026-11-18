@@ -1,4 +1,9 @@
-# Dependências pip do Dashamp (venv em ~/dashamp/.venv, criado com --system-site-packages).
-# PyGObject (gi) e GStreamer vêm do apt (python3-gi, gir1.2-gstreamer-1.0): o venv os enxerga
-# pelos site-packages do sistema. Instalar sempre com --only-binary=:all: (compilar no Eee PC é lento).
-pygame-ce==2.5.8
+# Dependências pip do Dashamp no Eee PC (venv em ~/dashamp/.venv, criado com --system-site-packages).
+# Instalar sempre com --only-binary=:all: (compilar no Eee PC é lento).
+#
+# Vêm do apt, não do pip (o venv os enxerga pelos site-packages do sistema):
+#   - pygame 2.1.2 (python3-pygame): o wheel i686 do pygame-ce traz um SDL compilado com instruções
+#     que o Celeron M não tem (instrução ilegal ao abrir a janela no X). Ver docs/estado.md, F0.7.
+#   - PyGObject e GStreamer (python3-gi, gir1.2-gstreamer-1.0).
+#
+# Por enquanto não há dependências pip.

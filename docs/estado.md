@@ -1,7 +1,34 @@
 # Estado do Dashamp
 
-Última tarefa concluída: **F0.6** (proteger o flash).
-Próxima: **F0.7** — núcleo mínimo: janela, métricas e captura.
+Última tarefa concluída: **F0.7** (núcleo mínimo: janela, métricas e captura).
+Próxima: **F0.8** — teste decisivo de desempenho.
+
+## Núcleo (F0.7)
+
+- **pygame-ce trocado pelo `python3-pygame` 2.1.2 do apt** (SDL 2.26.5; 68,5 MB, aprovado pelo
+  mantenedor). O wheel i686 do pygame-ce importa, mas morre com *instrução ilegal* em
+  `pygame.display.init()` com o driver X11: o kernel aponta o `libSDL2` embutido no wheel
+  (`trap invalid opcode ... in libSDL2-2-44947314.0.so`). Com `SDL_VIDEODRIVER=dummy` não falha.
+  O Debian compila para a base i686, que o Celeron M (só até SSE2) suporta.
+- No PC de desenvolvimento continua o pygame-ce (`deploy/requirements-pc.txt`), porque o pygame 2.1.2
+  não tem wheel para Pythons novos. **O código deve usar só a API do pygame 2.1.2.**
+- **`SDL_FRAMEBUFFER_ACCELERATION=0`** (definido em `core/app.py`): sem ele o SDL apresenta a janela
+  por OpenGL e carrega Mesa `i915_dri` + `libLLVM-15` (~58 MB). Medido na tela de teste:
+
+  | | fps | CPU | RSS |
+  | --- | --- | --- | --- |
+  | padrão (OpenGL) | 30,2 | 6,5% | 119 MB |
+  | `SDL_FRAMEBUFFER_ACCELERATION=0` (XShm) | 30,2 | 2,0% | 49 MB |
+
+- `pygame.display.init()` + `pygame.font.init()` em vez de `pygame.init()`: não abre o mixer, que
+  prenderia o ALSA (o áudio é do GStreamer).
+- Opções comuns de todo app: `--metricas`, `--captura N`, `--duracao N` (encerra sozinho; para
+  medições pelo SSH) e `--janela` (bordas e cursor, no PC).
+- Teste pelo SSH: o X sobe como root com
+  `sudo xinit /bin/sh -c "xhost +si:localuser:dashamp; exec sleep 900" -- :0 vt1` e o app roda como
+  `dashamp` com `DISPLAY=:0`. Captura conferida (800×480 inteiros, animação, 30 fps).
+- Ainda não verificado: sair com Esc/Q no teclado físico (pelo SSH não há como apertar a tecla;
+  fica para a conferência da F0.10).
 
 ## Flash (F0.6)
 
@@ -21,8 +48,8 @@ Próxima: **F0.7** — núcleo mínimo: janela, métricas e captura.
 
 ## Venv e deploy (F0.5)
 
-- **pygame-ce 2.5.8 pelo pip**: há wheel `manylinux2014_i686` para cp311 (traz o próprio SDL 2.32.10),
-  então o `python3-pygame` do apt não foi necessário. Instalar sempre com `--only-binary=:all:`.
+- ~~pygame-ce 2.5.8 pelo pip~~ (wheel `manylinux2014_i686`): importava, mas não abre janela no
+  Eee PC; substituído pelo `python3-pygame` do apt na F0.7.
 - **Venv com `--system-site-packages`**: o `gi` (PyGObject) e o GStreamer 1.22 vêm do apt; sem a
   opção, o venv não os enxerga. Venv: 59 MB. `spectrum` e `playbin` disponíveis.
 - **`deploy/deploy.sh`**: usa `rsync` se existir no PC; o Git Bash do Windows não tem, então cai

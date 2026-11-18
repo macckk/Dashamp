@@ -79,7 +79,7 @@ e propor a lista antes de desativar).
 
 **Aceite:** após `sudo reboot`, o SSH volta, `findmnt /tmp` mostra tmpfs e `mount | grep ' / '` mostra `noatime`.
 
-### [ ] F0.7 Núcleo mínimo: janela, métricas e captura
+### [x] F0.7 Núcleo mínimo: janela, métricas e captura
 **Fazer:** em `core/`:
 - `app.py`: janela 800×480 sem bordas, laço com limite de 30 fps, saída com Esc/Q.
 - `metricas.py`: fps médio, CPU do processo e RSS (lidos de `/proc/self/stat` e `/proc/self/status`), impressos a cada 5 s com `--metricas`.
