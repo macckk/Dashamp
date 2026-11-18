@@ -1,7 +1,30 @@
 # Estado do Dashamp
 
-Última tarefa concluída: **F1.6** (player funcional).
-Próxima: **F1.7** — playlist.
+Última tarefa concluída: **F1.7** (playlist).
+Próxima: **F1.8** — troca de skin e equalizador.
+
+## Playlist (F1.7)
+
+- `player/metadados.py`: `carregar_lista(entradas)` aceita arquivos, pastas (recursivas, ordem
+  alfabética) e `.m3u`/`.m3u8` (caminhos relativos à lista; `#EXTINF` usado quando falta ID3).
+  MP3 lido em Python puro, só o começo do arquivo: ID3v2.3/2.4 (TIT2/TPE1) e duração pelo
+  cabeçalho Xing/Info (VBR) ou pelo bitrate do 1º quadro (CBR). Sem GStreamer na carga.
+- `player/janela_playlist.py`: moldura do `pledit.bmp` (cantos, título, laterais, base, puxador da
+  rolagem) montada uma vez em 1× e ampliada; altura 116 + 29·k. Cores do `pledit.txt` (normal,
+  current, normalbg, selectedbg). O texto é desenhado na escala da tela com a fonte padrão do pygame
+  (o `pledit.txt` só nomeia uma fonte do sistema, Arial). Linhas em cache; a janela só é redesenhada
+  quando lista, cursor, faixa atual, foco ou rolagem mudam.
+- Layout em 800×480: principal 2× em cima + playlist 2× (4 linhas) embaixo = 464 px; tecla **L**
+  alterna a playlist sozinha e alta (13 linhas). **Tab** troca o foco (título ativo/inativo como no
+  Winamp). Na playlist: ↑/↓, PgUp/PgDn, Home/End, Enter. O cursor acompanha a faixa atual.
+- MP3s de teste: `python3 scripts/gerar_mp3_teste.py ~/musica/lista50 --lista 50` (50 faixas de
+  6–20 s, 128/192/320 kbps, "Faixa NN"; 18 MB; ~5 min no Eee PC).
+- **Aceite no Eee PC**: 50 faixas carregadas em **0,71 s a frio** (cache de disco esvaziado; 0,04 s
+  com cache); tocando, as faixas 1→2→3→4 avançaram sozinhas nos tempos esperados (13, 33, 45 s).
+  30,0 fps, CPU do processo ~49%, RSS 65 MB. Captura conferida. Testes: 40 passam.
+- Observação: no intervalo de 5 s em que há troca de faixa o fps médio cai para ~29,2 (o `abrir`
+  do GStreamer bloqueia o laço por alguns quadros). Candidato a otimização (trocar de faixa numa
+  thread) se incomodar na F1.9.
 
 ## Player funcional (F1.6)
 

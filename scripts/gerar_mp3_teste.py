@@ -46,7 +46,7 @@ def gerar_wav(caminho: str, segundos: int) -> None:
             w.writeframes(trecho(inicio, min(TRECHO_S, segundos - inicio)).tobytes())
 
 
-def codificar_mp3(wav: str, mp3: str, kbps: int) -> None:
+def codificar_mp3(wav: str, mp3: str, kbps: int, titulo: str = "Varredura de teste") -> None:
     import gi
 
     gi.require_version("Gst", "1.0")
@@ -60,7 +60,7 @@ def codificar_mp3(wav: str, mp3: str, kbps: int) -> None:
     )
     # As tags vão direto no id3v2mux (GstTagSetter); o taginject não aceita valores com espaço.
     tags = Gst.TagList.new_from_string(
-        'taglist, title="Varredura de teste", artist="Dashamp", album="Sinais sinteticos"')
+        f'taglist, title="{titulo}", artist="Dashamp", album="Sinais sinteticos"')
     pipeline.get_by_name("mux").merge_tags(tags, Gst.TagMergeMode.REPLACE_ALL)
     pipeline.set_state(Gst.State.PLAYING)
     msg = pipeline.get_bus().timed_pop_filtered(
@@ -70,12 +70,36 @@ def codificar_mp3(wav: str, mp3: str, kbps: int) -> None:
         raise SystemExit(f"erro ao codificar: {msg.parse_error()[0].message}")
 
 
+def gerar_lista(pasta: str, n: int) -> None:
+    """Faixas 'Faixa 01'..'Faixa N' para testar a playlist (F1.7); repetir pula as que já existem."""
+    os.makedirs(pasta, exist_ok=True)
+    wav = "/tmp/dashamp_lista.wav" if os.path.isdir("/tmp") else os.path.join(pasta, "tmp.wav")
+    for i in range(1, n + 1):
+        mp3 = os.path.join(pasta, f"faixa_{i:02d}.mp3")
+        if os.path.exists(mp3):
+            continue
+        segundos = 6 + (i * 7) % 15
+        kbps = (128, 192, 320)[i % 3]
+        try:
+            gerar_wav(wav, segundos)
+            codificar_mp3(wav, mp3, kbps, titulo=f"Faixa {i:02d}")
+        finally:
+            if os.path.exists(wav):
+                os.remove(wav)
+        print(f"{mp3}: {segundos} s, {kbps} kbps", flush=True)
+
+
 def main() -> None:
     p = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     p.add_argument("saida", nargs="?", default=os.path.expanduser("~/musica/teste_320kbps.mp3"))
     p.add_argument("--segundos", type=int, default=300)
     p.add_argument("--kbps", type=int, default=320)
+    p.add_argument("--lista", type=int, metavar="N",
+                   help="gera N faixas curtas (6–20 s; 128/192/320 kbps) na pasta `saida`")
     args = p.parse_args()
+    if args.lista:
+        gerar_lista(args.saida, args.lista)
+        return
     os.makedirs(os.path.dirname(os.path.abspath(args.saida)), exist_ok=True)
     wav = "/tmp/dashamp_teste.wav" if os.path.isdir("/tmp") else args.saida + ".wav"
     try:

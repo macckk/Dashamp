@@ -100,6 +100,25 @@ SPRITES: dict[str, Sprite] = {
     "balanco_cursor_press": _s("balance", 0, 422, 14, 11),
 }
 
+# pledit.bmp — moldura da janela de playlist (sufixo _inativo: sem foco)
+SPRITES.update({
+    "pl_canto_se": _s("pledit", 0, 0, 25, 20),
+    "pl_canto_se_inativo": _s("pledit", 0, 21, 25, 20),
+    "pl_titulo": _s("pledit", 26, 0, 100, 20),
+    "pl_titulo_inativo": _s("pledit", 26, 21, 100, 20),
+    "pl_topo": _s("pledit", 127, 0, 25, 20),
+    "pl_topo_inativo": _s("pledit", 127, 21, 25, 20),
+    "pl_canto_sd": _s("pledit", 153, 0, 25, 20),
+    "pl_canto_sd_inativo": _s("pledit", 153, 21, 25, 20),
+    "pl_esquerda": _s("pledit", 0, 42, 12, 29),
+    "pl_direita": _s("pledit", 31, 42, 20, 29),
+    "pl_canto_ie": _s("pledit", 0, 72, 125, 38),
+    "pl_canto_id": _s("pledit", 126, 72, 150, 38),
+    "pl_base": _s("pledit", 179, 0, 25, 38),
+    "pl_rolagem": _s("pledit", 52, 53, 8, 18),
+    "pl_rolagem_press": _s("pledit", 61, 53, 8, 18),
+})
+
 # Dígitos grandes do tempo: numbers.bmp (9×13 cada; o menos é um traço de 5×1)
 # ou nums_ex.bmp (9×13 cada, com quadros próprios para o menos).
 for _n in range(10):

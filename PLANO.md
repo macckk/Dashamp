@@ -155,7 +155,7 @@ setas para volume/busca.
 
 **Aceite:** com `--metricas`, ≥ 30 fps tocando música; a captura mostra o analisador animado.
 
-### [ ] F1.7 Playlist
+### [x] F1.7 Playlist
 **Fazer:** janela de playlist com as cores de `pledit.txt`, lendo uma pasta (`~/musica`) ou um `.m3u`;
 navegação por teclado; avanço automático de faixa.
 
