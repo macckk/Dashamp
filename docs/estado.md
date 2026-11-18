@@ -1,7 +1,36 @@
 # Estado do Dashamp
 
-Última tarefa concluída: **F0.7** (núcleo mínimo: janela, métricas e captura).
-Próxima: **F0.8** — teste decisivo de desempenho.
+Última tarefa concluída: **F0.8** (teste decisivo de desempenho).
+Próxima: **F0.9** — boot direto no app.
+
+## Desempenho (F0.8, 2026-11-18)
+
+`core/bench_ponteiro.py`: mostrador 400×400 pré-renderizado + ponteiro (sprite 338×18 com alfa) +
+cubo central + texto de fps. Medido por `scripts/medir_bench.sh` no Eee PC, entre 10 s e 25 s de
+execução. "parcial" = redesenha só os retângulos que mudam; "total" = tela inteira a cada quadro.
+CPU do app é do processo Python; "sistema" inclui o Xorg (que copia os quadros via XShm).
+
+| Ponteiro | Mostradores | Atualização | fps | CPU app | CPU sistema | Xorg | RSS |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| rotate a cada quadro | 1 | parcial | 30,2 | 44% | 49% | 3% | 48 MB |
+| rotate a cada quadro | 1 | total | 30,2 | 52% | 62% | 9% | 48 MB |
+| rotate a cada quadro | 2 | parcial | **28,6** | 81% | **86%** | 4% | 49 MB |
+| rotate a cada quadro | 2 | total | **27,4** | 83% | **91%** | 8% | 49 MB |
+| cache de 360 ângulos | 1 | parcial | 30,2 | 15% | 18% | 1% | 67 MB |
+| cache de 360 ângulos | 1 | total | 30,2 | 24% | 35% | 9% | 67 MB |
+| **cache de 360 ângulos** | **2** | **parcial** | **30,1** | **29%** | **32%** | 2% | **68 MB** |
+| cache de 360 ângulos | 2 | total | 30,2 | 38% | 49% | 9% | 67 MB |
+
+**Aceite atingido**: dois mostradores em tela cheia a 30 fps com 32% de CPU do sistema (parcial)
+ou 49% (redesenhando tudo). Conclusões para as fases 1–3:
+
+- **Ponteiros usam cache de ângulos**, nunca `transform.rotate` por quadro: a rotação sozinha custa
+  ~20% de CPU por ponteiro e dois deles já estouram o orçamento.
+- O cache (gerado com `rotozoom`, antisserrilhado, e recortado ao conteúdo) custa **18 MB e 2,3 s
+  de carga por desenho de ponteiro**. Dois mostradores com o mesmo ponteiro dividem o cache. Para
+  vários ponteiros diferentes: gerar só os ângulos da varredura (270°), ou guardar o cache em disco.
+- **Atualização parcial** economiza 10–17 pontos de CPU (principalmente no Xorg). Vale manter.
+- Folga para áudio + espectro + OBD na F3.5: ~65% de CPU e ~50 MB de RAM no orçamento de 120 MB.
 
 ## Núcleo (F0.7)
 

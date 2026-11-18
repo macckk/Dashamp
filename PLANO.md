@@ -87,7 +87,7 @@ e propor a lista antes de desativar).
 
 **Aceite:** no Eee PC, a janela abre, a captura é trazida ao PC e mostra o conteúdo esperado.
 
-### [ ] F0.8 Teste decisivo de desempenho
+### [x] F0.8 Teste decisivo de desempenho
 **Fazer:** `core/bench_ponteiro.py`: fundo de mostrador 400×400 pré-renderizado + ponteiro girando
 com `pygame.transform.rotate` a cada quadro, mais um texto de fps. Medir três variações e registrar
 em `docs/estado.md`: rotação a cada quadro; ângulos pré-renderizados (cache de 360 sprites); tela cheia
