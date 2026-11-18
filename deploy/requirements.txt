@@ -1,0 +1,4 @@
+# Dependências pip do Dashamp (venv em ~/dashamp/.venv, criado com --system-site-packages).
+# PyGObject (gi) e GStreamer vêm do apt (python3-gi, gir1.2-gstreamer-1.0): o venv os enxerga
+# pelos site-packages do sistema. Instalar sempre com --only-binary=:all: (compilar no Eee PC é lento).
+pygame-ce==2.5.8

@@ -63,7 +63,7 @@ alsa-utils unzip sqlite3 htop`. Sem `--install-recommends`.
 **Aceite:** `startx` sobe no Eee PC (testar com `ssh eeepc 'xinit /usr/bin/xsetroot -solid gray -- :0 vt1 & sleep 5; pkill xinit'`)
 e `speaker-test -c2 -l1` gera som. `df -h /` ainda mostra ≥ 1,5 GB livres.
 
-### [ ] F0.5 Repositório, venv e deploy
+### [x] F0.5 Repositório, venv e deploy
 **Fazer:**
 - Criar a estrutura de pastas de `CLAUDE.md` (o `.gitignore` e o repositório já existem desde a F0.0).
 - No Eee PC: `python3 -m venv ~/dashamp/.venv` e tentar `pip install pygame-ce`. Se falhar,

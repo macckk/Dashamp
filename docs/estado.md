@@ -1,7 +1,21 @@
 # Estado do Dashamp
 
-Última tarefa concluída: **F0.4** (pacotes base).
-Próxima: **F0.5** — repositório, venv e deploy.
+Última tarefa concluída: **F0.5** (repositório, venv e deploy).
+Próxima: **F0.6** — proteger o flash.
+
+## Venv e deploy (F0.5)
+
+- **pygame-ce 2.5.8 pelo pip**: há wheel `manylinux2014_i686` para cp311 (traz o próprio SDL 2.32.10),
+  então o `python3-pygame` do apt não foi necessário. Instalar sempre com `--only-binary=:all:`.
+- **Venv com `--system-site-packages`**: o `gi` (PyGObject) e o GStreamer 1.22 vêm do apt; sem a
+  opção, o venv não os enxerga. Venv: 59 MB. `spectrum` e `playbin` disponíveis.
+- **`deploy/deploy.sh`**: usa `rsync` se existir no PC; o Git Bash do Windows não tem, então cai
+  para `tar` pelo SSH, extraindo em `~/dashamp/.novo` e trocando o conteúdo (espelho: arquivos
+  apagados no PC somem no Eee PC). `.venv` e `.app` são preservados; nada é apagado fora de
+  `~/dashamp`. `--deps` instala `deploy/requirements.txt`. O host vem de `DASHAMP_HOST_ALVO` no
+  `.env` (padrão `eeepc`).
+- O reinício usa `pkill -f "[d]ashamp.main"`: sem o colchete, o `pkill` mataria o próprio shell
+  remoto, cuja linha de comando contém o padrão.
 
 ## Pacotes base (F0.4)
 
