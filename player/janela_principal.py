@@ -203,6 +203,12 @@ def aplicar_regiao(sup: pygame.Surface, mascara: pygame.mask.Mask) -> None:
     sup.set_colorkey(COR_TRANSPARENTE)
 
 
+def limpar_caches() -> None:
+    """Esquece as máscaras de região (chamado ao trocar de skin, para não acumular)."""
+    _cache_mascaras.clear()
+    _cache_fora.clear()
+
+
 def ampliar(sup: pygame.Surface, escala: int) -> pygame.Surface:
     if escala == 1:
         return sup

@@ -16,6 +16,7 @@ class MotorFalso:
         self._balanco = 0
         self.pos = 10.0
         self.dur = 180.0
+        self.eq: tuple = (False, 0.0, [0.0] * 10)
 
     def abrir(self, caminho: str) -> None:
         self.chamadas.append(f"abrir {caminho}")
@@ -58,6 +59,9 @@ class MotorFalso:
 
     def espectro(self) -> list[float] | None:
         return [0.5] * 19 if self._estado == "tocando" else None
+
+    def equalizador(self, ligado: bool, preamp_db: float, bandas_db: list[float]) -> None:
+        self.eq = (ligado, preamp_db, list(bandas_db))
 
     def fechar(self) -> None:
         pass

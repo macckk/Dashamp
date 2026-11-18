@@ -1,8 +1,10 @@
 """Motor de áudio: `playbin` do GStreamer numa thread com GLib MainLoop.
 
-- Controles: abrir, tocar, pausar, parar, buscar, volume (0..100), balanço (-100..100).
+- Controles: abrir, tocar, pausar, parar, buscar, volume (0..100), balanço (-100..100),
+  equalizador (10 bandas + pré-amplificação, em dB).
 - Leituras: posição, duração, estado, tags (título, artista, kbps, kHz, canais).
-- Espectro: o filtro de áudio é `audiopanorama ! spectrum`; cada mensagem (~20 por segundo) vira
+- Espectro: o filtro de áudio é
+  `audioconvert ! equalizer-10bands ! volume ! audiopanorama ! spectrum`; cada mensagem (~20 por segundo) vira
   19 barras 0..1, guardadas num deque curto lido pelo laço do pygame com `espectro()`.
 - Eventos (fim da faixa, erro, aviso) vão para a fila `eventos`, também lida pelo laço do pygame.
 
@@ -18,6 +20,7 @@ import re
 import threading
 import time
 from collections import deque
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 
 import gi
@@ -68,6 +71,9 @@ class MotorAudio:
     def _montar_filtro(self) -> Gst.Bin:
         filtro = Gst.Bin.new("filtro")
         conv = Gst.ElementFactory.make("audioconvert", "conv")
+        # Equalizador (F1.8): com todos os ganhos em 0 dB ele fica em passthrough (sem custo).
+        self.eq = Gst.ElementFactory.make("equalizer-10bands", "eq")
+        self.preamp = Gst.ElementFactory.make("volume", "preamp")
         self.panorama = Gst.ElementFactory.make("audiopanorama", "balanco")
         self.spectrum = Gst.ElementFactory.make("spectrum", "espectro")
         self.spectrum.set_property("bands", N_BANDAS)
@@ -75,10 +81,11 @@ class MotorAudio:
         self.spectrum.set_property("threshold", -80)
         self.spectrum.set_property("post-messages", True)
         self.spectrum.set_property("message-magnitude", True)
-        for e in (conv, self.panorama, self.spectrum):
+        cadeia = (conv, self.eq, self.preamp, self.panorama, self.spectrum)
+        for e in cadeia:
             filtro.add(e)
-        conv.link(self.panorama)
-        self.panorama.link(self.spectrum)
+        for a, b in zip(cadeia, cadeia[1:]):
+            a.link(b)
         filtro.add_pad(Gst.GhostPad.new("sink", conv.get_static_pad("sink")))
         filtro.add_pad(Gst.GhostPad.new("src", self.spectrum.get_static_pad("src")))
         return filtro
@@ -121,6 +128,12 @@ class MotorAudio:
         if valor is not None:
             self.panorama.set_property("panorama", max(-100, min(100, int(valor))) / 100)
         return round(self.panorama.get_property("panorama") * 100)
+
+    def equalizador(self, ligado: bool, preamp_db: float, bandas_db: Sequence[float]) -> None:
+        """Ganhos em dB (-12..+12). Desligado = tudo em 0 dB (o elemento vira passthrough)."""
+        for i, db in enumerate(bandas_db):
+            self.eq.set_property(f"band{i}", float(db) if ligado else 0.0)
+        self.preamp.set_property("volume", 10 ** (preamp_db / 20) if ligado else 1.0)
 
     def fechar(self) -> None:
         self.playbin.set_state(Gst.State.NULL)

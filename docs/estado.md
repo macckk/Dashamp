@@ -1,7 +1,35 @@
 # Estado do Dashamp
 
-Última tarefa concluída: **F1.7** (playlist).
-Próxima: **F1.8** — troca de skin e equalizador.
+Última tarefa concluída: **F1.8** (troca de skin e equalizador).
+Próxima: **F1.9** `[HUMANO]` — o mantenedor usa o player e lista ajustes.
+
+## Troca de skin e equalizador (F1.8)
+
+- Tecla **K**: próxima skin de `player/skins_teste/*.wsz` (ordem alfabética), sem reiniciar.
+  `Player.aplicar_skin` refaz analisador (mantendo as alturas das barras), playlists, janela do
+  equalizador e colorkey da região, e limpa o cache de máscaras de região
+  (`janela_principal.limpar_caches`), para nada da skin anterior ficar referenciado.
+  A skin base fica na memória como reserva (empréstimo de BMPs ausentes); trocar para ela
+  reaproveita esse objeto em vez de ler o `.wsz` de novo (ler e decodificar os BMPs da base
+  custava ~230 ms no Eee PC; as trocas para ela caíram de ~430 ms para ~105 ms).
+- `--ciclo-skins S` troca sozinho a cada S segundos (só para medir).
+- Equalizador: `player/janela_eq.py` desenha o `eqmain.bmp` (fundo, título ativo/inativo, ON,
+  AUTO, PRESETS, 28 quadros de slider do verde ao vermelho, cursor normal/selecionado, gráfico
+  com a curva interpolada e a linha da pré-amp). Tecla **E** alterna a janela de baixo entre
+  playlist e equalizador (os botões EQ/PL da principal acendem conforme). Com foco no equalizador
+  (Tab): ←/→ escolhem o slider, ↑/↓ ±1 dB (-12..+12), Enter liga/desliga, Backspace zera.
+  AUTO e PRESETS são só desenho.
+- Áudio: filtro `audioconvert ! equalizer-10bands ! volume ! audiopanorama ! spectrum`
+  (gst-plugins-good, já instalado). As bandas do GStreamer são 29 Hz…15 kHz, próximas mas não
+  iguais às do Winamp (60 Hz…16 kHz). Pré-amp pelo `volume` (10^(dB/20)). Desligado = ganhos 0 dB,
+  e o elemento fica em passthrough. O analisador mostra o som já equalizado (como no Winamp).
+- **Aceite no Eee PC**: 46 trocas seguidas (uma a cada 2 s, tocando): **96–277 ms** por troca
+  (winamp5_classified ~180 ms, zelda_amp_3 ~160 ms, base ~105 ms); RSS 68,0 MB depois da 1ª e
+  depois **71,1–72,6 MB** oscilando sem tendência até a 46ª. O fps médio com uma troca a cada 2 s
+  fica em ~27 (cada troca para o laço uns 3–6 quadros); sem trocas continua 30,0.
+- CPU do áudio sozinho (MP3 320 kbps): equalizador desligado 23,9%, ligado **31,0%** (+7 pontos).
+  Somado ao player (~55%), fica perto de 62%, dentro do orçamento de 70%.
+- Testes: 44 passam no Eee PC (4 novos em `testes/test_troca_skin_eq.py`).
 
 ## Playlist (F1.7)
 

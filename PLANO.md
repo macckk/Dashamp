@@ -161,7 +161,7 @@ navegação por teclado; avanço automático de faixa.
 
 **Aceite:** uma pasta com 50 faixas carrega em < 2 s e toca em sequência.
 
-### [ ] F1.8 Troca de skin e equalizador
+### [x] F1.8 Troca de skin e equalizador
 **Fazer:** tecla para trocar de skin em tempo de execução; equalizador de 10 bandas (`equalizer-10bands`)
 com `eqmain.bmp`, se o tempo permitir.
 
