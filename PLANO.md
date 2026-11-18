@@ -96,7 +96,7 @@ em `docs/estado.md`: rotação a cada quadro; ângulos pré-renderizados (cache 
 **Aceite:** pelo menos uma variação com dois mostradores atinge ≥ 30 fps e CPU ≤ 70% no Eee PC.
 Se nenhuma atingir, **pare e reporte os números**: o plano das fases 1–3 precisa ser revisto.
 
-### [ ] F0.9 Boot direto no app
+### [x] F0.9 Boot direto no app
 **Fazer:**
 - Autologin no tty1 (`/etc/systemd/system/getty@tty1.service.d/override.conf`).
 - `~/.bash_profile`: se estiver no tty1, `exec startx`.

@@ -1,7 +1,26 @@
 # Estado do Dashamp
 
-Última tarefa concluída: **F0.8** (teste decisivo de desempenho).
-Próxima: **F0.9** — boot direto no app.
+Última tarefa concluída: **F0.9** (boot direto no app).
+Próxima: **F0.10** `[HUMANO]` — conferência visual.
+
+## Boot direto (F0.9)
+
+- Instalação: `deploy/instalar_boot.sh` (roda no PC; repetir é seguro). Modelos em `deploy/sistema/`:
+  override do `getty@tty1` com `--autologin` (usuário preenchido na instalação, não fica no
+  repositório), `~/.bash_profile` (carrega o `~/.profile` e, só no tty1, `exec startx -- -nocursor`)
+  e `~/.xinitrc` (`xset s off`, `s noblank`, `-dpms` e `deploy/run.sh` em laço).
+- **O X roda como o usuário comum** (não root): o startx no console do tty1 tem permissão de
+  terminal, o que não acontece pelo SSH.
+- Cursor escondido pelo próprio X (`-nocursor`): dispensa o pacote `unclutter`.
+- `deploy/run.sh` lê `~/dashamp/.app` (nome + argumentos extras; padrão `bench` = cache com dois
+  mostradores). Saída do app em `/tmp/dashamp.log` (tmpfs). O Python é chamado por caminho absoluto;
+  o `deploy.sh` encerra o app com `pkill -f "[/]dashamp/.venv/bin/python -m"`.
+- Verificado após `sudo reboot`: o Eee PC cai no bench sem intervenção (SSH de volta em ~30 s, bench
+  rodando ~1 min após ligar); 30 fps, 28% de CPU, 67 MB de RSS; captura conferida. Encerrando o app,
+  o laço o reabre em < 6 s.
+- Avisos inofensivos no `/tmp/startx.log`: `xf86EnableIO ... Operation not permitted` (normal no X sem
+  root com KMS) e `pkexec: not found` (o driver intel tenta o ajudante de brilho via pkexec; se as
+  teclas de brilho não funcionarem no X, ver na F0.10).
 
 ## Desempenho (F0.8, 2026-11-18)
 

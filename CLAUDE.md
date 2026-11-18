@@ -62,9 +62,10 @@ Hardware do alvo — trate como restrição dura, não como sugestão:
 editar no PC  →  ./deploy/deploy.sh  →  testar no Eee PC  →  ver captura de tela  →  commit
 ```
 
-- `deploy/deploy.sh`: `rsync` do repositório para `eeepc:~/dashamp` (sem `.git`, `.venv`,
-  `__pycache__`) e reinício do app (`ssh eeepc 'pkill -f dashamp.main || true'`; o laço
-  do `.xinitrc` o abre de novo).
+- `deploy/deploy.sh`: `rsync` (ou `tar` pelo SSH, no Git Bash) do repositório para `eeepc:~/dashamp`
+  (sem `.git`, `.venv`, `__pycache__`) e reinício do app
+  (`ssh eeepc 'pkill -f "[/]dashamp/.venv/bin/python -m" || true'`; o laço do `.xinitrc` o abre
+  de novo). O app aberto no boot é escolhido em `~/dashamp/.app` (ver `deploy/run.sh`).
 - O app roda no X do próprio Eee PC (`DISPLAY=:0`). Para rodar um teste avulso:
   `ssh eeepc 'cd ~/dashamp && DISPLAY=:0 .venv/bin/python -m <módulo>'`.
 - **Para enxergar a tela**: todo app aceita `--captura <segundos>`. Ele salva um PNG em

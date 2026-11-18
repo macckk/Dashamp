@@ -1,0 +1,8 @@
+# ~/.bash_profile do Eee PC (instalado por deploy/instalar_boot.sh).
+# O bash de login lê este arquivo no lugar do ~/.profile; por isso ele é carregado aqui.
+[ -f "$HOME/.profile" ] && . "$HOME/.profile"
+
+# No tty1 (autologin), abre o X direto no app. Pelo SSH ou em outros terminais, nada muda.
+if [ -z "${DISPLAY:-}" ] && [ "$(tty)" = "/dev/tty1" ]; then
+    exec startx -- -nocursor >/tmp/startx.log 2>&1
+fi

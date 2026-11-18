@@ -39,6 +39,8 @@ if [[ "${1:-}" == "--deps" ]]; then
     ssh "$host" 'cd ~/dashamp && .venv/bin/pip install -q --only-binary=:all: -r deploy/requirements.txt'
 fi
 
-# O colchete evita que o pkill case com o próprio shell remoto que contém o padrão.
-ssh "$host" 'pkill -f "[d]ashamp.main" || true'
+# Encerra o app; o laço do ~/.xinitrc o abre de novo. O run.sh chama o Python do venv por
+# caminho absoluto, então o padrão pega só os apps do projeto. O colchete evita que o pkill
+# case com o próprio shell remoto, cuja linha de comando contém o padrão.
+ssh "$host" 'pkill -f "[/]dashamp/.venv/bin/python -m" || true'
 echo "deploy ok -> $host:~/dashamp"

@@ -1,0 +1,15 @@
+#!/bin/sh
+# ~/.xinitrc do Eee PC (instalado por deploy/instalar_boot.sh). Sem gerenciador de janelas.
+# O cursor é escondido pelo próprio X (startx -- -nocursor, no ~/.bash_profile).
+
+# Tela sempre acesa: sem descanso de tela nem economia de energia do monitor.
+xset s off
+xset s noblank
+xset -dpms
+
+# O app reabre se fechar (Esc/Q, erro ou deploy). Para sair do laço: Ctrl+Alt+F2 e
+# `pkill -f "[x]initrc"` em outro terminal, ou pelo SSH.
+while true; do
+    "$HOME/dashamp/deploy/run.sh"
+    sleep 1
+done
