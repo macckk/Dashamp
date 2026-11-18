@@ -1,7 +1,24 @@
 # Estado do Dashamp
 
-Última tarefa concluída: **F1.1** (skins de teste).
-Próxima: **F1.2** — leitor de `.wsz`.
+Última tarefa concluída: **F1.2** (leitor de `.wsz`).
+Próxima: **F1.3** — mapa de sprites.
+
+## Leitor de skins (F1.2)
+
+- `core/skin.py`: `carregar(caminho, padrao=None) -> Skin`. Índice do zip por nome-base minúsculo
+  (raiz tem preferência sobre subpastas); 19 BMPs conhecidos viram superfícies (sem `convert()`,
+  para funcionar sem janela; `Skin.converter()` depois de abrir a tela). BMP que o SDL recusa é
+  tentado de novo com detecção pelo conteúdo (skins com PNG/GIF renomeado).
+- `nums_ex.bmp` e `numbers.bmp` são equivalentes; `imagem("numbers")` prefere `nums_ex`.
+- Fallback: BMP ausente vem da skin padrão (`emprestados`); sem padrão, fica em `ausentes`.
+  `viscolor.txt`/`pledit.txt` ausentes: os da padrão ou os valores internos (iguais aos da base-2.91,
+  conferido em teste). Parsers tolerantes: zeros à esquerda, vírgula sobrando, `//`, cor sem `#`,
+  lixo depois do hex, outras seções no `pledit.txt`.
+- **Dependência nova: `python3-pytest`** (apt, 2,3 MB) no Eee PC, para rodar `testes/` lá; no PC,
+  `pytest` no `.venv` (`deploy/requirements-pc.txt`).
+- Aceite no Eee PC: `pytest testes/` → 9 passaram (3,6 s). Carga: base-2.91 293 ms,
+  winamp5_classified 81 ms, zelda_amp_3 67 ms (todas < 1 s). A base é mais lenta, apesar de menor;
+  provavelmente pelo formato dos BMPs dela. Fica abaixo do limite, então não investiguei.
 
 ## Skins de teste (F1.1)
 

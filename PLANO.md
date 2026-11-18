@@ -121,7 +121,7 @@ bloqueado, pedir ao mantenedor.
 
 **Aceite:** os três arquivos abrem com `unzip -l` e `git status` não os mostra.
 
-### [ ] F1.2 Leitor de `.wsz`
+### [x] F1.2 Leitor de `.wsz`
 **Fazer:** `core/skin.py`: abre o zip (nomes de arquivo sem diferenciar maiúsculas), carrega os BMPs
 como superfícies pygame, lê `viscolor.txt` (24 cores) e `pledit.txt` (seção `[Text]`), com fallback
 para a skin padrão quando faltar arquivo.

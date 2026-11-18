@@ -2,3 +2,4 @@
 # pygame-ce porque o pygame 2.1.2 do Eee PC não tem wheel para Pythons novos. O código deve usar só
 # a API comum aos dois (a do pygame 2.1.2): o aceite vale no Eee PC.
 pygame-ce==2.5.8
+pytest
