@@ -1,7 +1,13 @@
 # Estado do Dashamp
 
-Última tarefa concluída: **F0.9** (boot direto no app).
-Próxima: **F0.10** `[HUMANO]` — conferência visual.
+Última tarefa concluída: **F0.10** (conferência visual) — **fase 0 concluída**.
+Próxima: **F1.1** — skins de teste.
+
+## Conferência visual (F0.10)
+
+- O mantenedor olhou a tela real com o bench rodando e confirmou que está tudo certo: brilho,
+  nitidez, imagem inteira, ponteiros fluidos e a saída pelo teclado (Q/Esc), com o app reabrindo
+  pelo laço do `.xinitrc`. Fica verificado no hardware o que o SSH não alcançava na F0.7.
 
 ## Boot direto (F0.9)
 
