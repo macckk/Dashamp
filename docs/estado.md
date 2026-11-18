@@ -1,7 +1,31 @@
 # Estado do Dashamp
 
-Última tarefa concluída: **F1.4** (janela principal estática).
-Próxima: **F1.5** — motor de áudio.
+Última tarefa concluída: **F1.5** (motor de áudio).
+Próxima: **F1.6** — player funcional.
+
+## Áudio (F1.5)
+
+- `player/audio.py` (`MotorAudio`): `playbin` (só áudio + volume por software) com filtro
+  `audioconvert ! audiopanorama ! spectrum` e GLib MainLoop numa thread. Volume 0..100 em escala
+  cúbica; balanço pelo `audiopanorama`; busca, pausa, posição, duração, tags (título, artista, kbps
+  das tags; kHz e canais das caps). Espectro: 512 bandas a cada 50 ms → 19 barras logarítmicas de
+  40 Hz a 16 kHz (`player/espectro.py`), num deque curto lido com `espectro()`; fim/erro/aviso na
+  fila `eventos`.
+- O PyGObject não converte o `GstValueList` da mensagem do `spectrum`: as magnitudes são lidas do
+  texto da estrutura (`to_string()` + regex). Funciona sem o pacote `python3-gst-1.0`.
+- A saída é uma descrição gst-launch (`autoaudiosink`, `fakesink sync=true` nos testes).
+- MP3 de teste sintético (sem direitos autorais): `python3 scripts/gerar_mp3_teste.py` gera
+  `~/musica/teste_320kbps.mp3` no Eee PC (5 min, 320 kbps CBR, 11,4 MB, varreduras 40 Hz–16 kHz e
+  batidas; leva ~2,5 min). Tags gravadas via `merge_tags` no `id3v2mux` (o `taginject` não aceita
+  valores com espaço).
+- `deploy/run.sh` aceita `nada` no `.app` (X sem app) para medições sem interferência.
+- **Aceite no Eee PC** (X ocioso, saída ALSA real, 5 min): CPU do sistema média **26%** (pico
+  34,5%), processo 24,6%, RSS 27 MB; 0 avisos/erros do GStreamer; fim da faixa no tempo certo;
+  6000 espectros (20,0/s). Deriva posição×relógio de −0,3 s (atraso de início). O som em si não foi
+  ouvido (sinal sintético, verificação remota).
+- Atenção para a F3.5: áudio (26%) + dois mostradores (32%) ≈ 58% antes do OBD. Se faltar folga:
+  reduzir para 256 bandas ou parar o espectro quando o analisador não estiver na tela.
+- Testes: 25 passam no Eee PC (os de áudio usam `fakesink sync=true` e o MP3 de teste).
 
 ## Janela principal (F1.4)
 

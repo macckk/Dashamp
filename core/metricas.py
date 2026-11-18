@@ -39,6 +39,31 @@ def rss_mb() -> float | None:
     return None
 
 
+class CpuSistema:
+    """Uso de CPU do sistema inteiro (todos os processos, inclusive o Xorg) entre duas leituras."""
+
+    def __init__(self) -> None:
+        self._anterior = self._ler()
+
+    @staticmethod
+    def _ler() -> tuple[int, int] | None:
+        try:
+            with open("/proc/stat", "rb") as f:
+                campos = [int(v) for v in f.readline().split()[1:8]]
+        except OSError:
+            return None
+        return sum(campos), campos[3] + campos[4]  # total, ocioso (idle + iowait)
+
+    def percentual(self) -> float | None:
+        """% de CPU ocupada desde a leitura anterior (e reinicia a contagem)."""
+        atual = self._ler()
+        anterior, self._anterior = self._anterior, atual
+        if atual is None or anterior is None or atual[0] == anterior[0]:
+            return None
+        total = atual[0] - anterior[0]
+        return 100.0 * (1 - (atual[1] - anterior[1]) / total)
+
+
 @dataclass
 class Amostra:
     fps: float

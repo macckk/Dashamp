@@ -4,6 +4,7 @@
 #   bench                      -> bench do ponteiro (cache, dois mostradores)
 #   bench --metricas           -> idem, imprimindo métricas em /tmp/dashamp.log
 #   teste                      -> tela de teste do núcleo
+#   nada                       -> nenhum app (X ocioso; para medições sem interferência)
 #   <módulo python> [args]     -> qualquer outro módulo, ex.: core.app --metricas
 set -u
 
@@ -16,6 +17,7 @@ read -r nome extras <<<"$linha"
 case "$nome" in
     bench) modulo="core.bench_ponteiro"; base=(--modo cache --mostradores 2) ;;
     teste) modulo="core.app"; base=() ;;
+    nada)  exec sleep infinity ;;
     *)     modulo="$nome"; base=() ;;
 esac
 

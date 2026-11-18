@@ -141,7 +141,7 @@ visualmente com a skin original.
 
 **Aceite:** a captura no Eee PC fica idêntica a uma referência do Winamp com a mesma skin.
 
-### [ ] F1.5 Motor de áudio
+### [x] F1.5 Motor de áudio
 **Fazer:** `player/audio.py`: `playbin` do GStreamer em uma thread com GLib MainLoop; play, pausa, stop,
 busca, volume, balanço, posição e duração; elemento `spectrum` (bandas suficientes para 19 barras, ~20 Hz)
 publicando magnitudes numa fila lida pelo laço do pygame.
