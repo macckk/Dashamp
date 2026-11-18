@@ -46,7 +46,7 @@ Feito pelo mantenedor (pode ocorrer antes ou depois da F0.0):
 
 **Aceite:** `ssh eeepc 'sudo -n true && echo ok'` imprime `ok` sem pedir senha.
 
-### [ ] F0.3 Levantamento da máquina
+### [x] F0.3 Levantamento da máquina
 **Fazer:** coletar `uname -a`, `free -m`, `df -h`, `lscpu`, `cat /proc/cpuinfo | grep flags`,
 `lsblk`, `aplay -l`, `ip -br a`, `lsusb` e o kernel instalado (deve ser o `686`, sem `-pae`).
 Criar `docs/estado.md` com o resumo.
