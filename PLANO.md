@@ -106,7 +106,7 @@ Se nenhuma atingir, **pare e reporte os números**: o plano das fases 1–3 prec
 
 **Aceite:** após `sudo reboot`, o Eee PC cai direto no bench sem intervenção.
 
-### [x] F0.10 `[HUMANO]` Conferência visual
+### [ ] F0.10 `[HUMANO]` Conferência visual
 O mantenedor olha a tela real (brilho, nitidez, fluidez do ponteiro) e confirma.
 
 ---
