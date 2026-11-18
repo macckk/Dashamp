@@ -1,7 +1,19 @@
 # Estado do Dashamp
 
-Última tarefa concluída: **F0.10** (conferência visual) — **fase 0 concluída**.
-Próxima: **F1.1** — skins de teste.
+Última tarefa concluída: **F1.1** (skins de teste).
+Próxima: **F1.2** — leitor de `.wsz`.
+
+## Skins de teste (F1.1)
+
+`scripts/baixar_skins.sh` baixa do Winamp Skin Museum (`r2.webampskins.org/skins/<md5>.wsz`) para
+`player/skins_teste/` (no `.gitignore`, conferido com `git check-ignore`) e confere o MD5 de cada
+uma. Funciona no PC (curl) e no Eee PC; os três arquivos abrem com `unzip -l` nos dois.
+
+| Arquivo local | MD5 | Por que serve de teste |
+| --- | --- | --- |
+| `base-2.91.wsz` | `5e4f1027…` | padrão do Winamp 2.91; referência e fallback; nomes em MAIÚSCULAS; sem `nums_ex.bmp` |
+| `winamp5_classified.wsz` | `b0fb83cc…` | escura e moderna; tem todos os arquivos e vários extras |
+| `zelda_amp_3.wsz` | `d770a634…` | temática; nomes com caixa mista (`playPaus.bmp`); **sem `numbers.bmp`** (só `nums_ex.bmp`) |
 
 ## Conferência visual (F0.10)
 

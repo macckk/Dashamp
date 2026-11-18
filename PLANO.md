@@ -113,7 +113,7 @@ O mantenedor olha a tela real (brilho, nitidez, fluidez do ponteiro) e confirma.
 
 ## Fase 1 — Player com skins clássicas
 
-### [ ] F1.1 Skins de teste
+### [x] F1.1 Skins de teste
 **Fazer:** `scripts/baixar_skins.sh` baixa 3 skins clássicas `.wsz` do Winamp Skin Museum para
 `player/skins_teste/` (a padrão do Winamp 2 e duas bem diferentes), com as URLs listadas no próprio
 script. A pasta está no `.gitignore`: as skins nunca vão para o repositório. Se o download for
