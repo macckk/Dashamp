@@ -99,8 +99,10 @@ def _tempo(dest: pygame.Surface, skin: Skin, segundos: int) -> None:
         _blit(dest, sp.digito(skin, valor), sp.POSICOES[nome])
 
 
-def desenhar(skin: Skin, estado: EstadoJanela) -> pygame.Surface:
-    sup = pygame.Surface((sp.LARGURA_JANELA, sp.ALTURA_JANELA))
+def desenhar(skin: Skin, estado: EstadoJanela,
+             destino: pygame.Surface | None = None) -> pygame.Surface:
+    """Desenha a janela inteira. Com `destino` (275×116 reaproveitada), não aloca superfícies."""
+    sup = destino if destino is not None else pygame.Surface((sp.LARGURA_JANELA, sp.ALTURA_JANELA))
     p = sp.POSICOES
     _blit(sup, sp.recortar(skin, "fundo"), p["fundo"])
     _blit(sup, sp.recortar(skin, "titulo_ativo" if estado.ativa else "titulo_inativo"), p["titulo"])
@@ -154,6 +156,8 @@ def mascara_regiao(poligonos: list[list[tuple[int, int]]] | None,
     """Pixels dentro da região (união dos polígonos), na regra do Windows: o pixel (x, y) está
     dentro se o seu centro (x+0,5; y+0,5) está dentro do polígono (par-ímpar). Sem região: tudo."""
     if poligonos is None:
+        if (w, h) == _MASCARA_CHEIA.get_size():
+            return _MASCARA_CHEIA
         return pygame.mask.Mask((w, h), fill=True)
     chave = tuple(tuple(p) for p in poligonos)
     if chave not in _cache_mascaras:
@@ -162,6 +166,8 @@ def mascara_regiao(poligonos: list[list[tuple[int, int]]] | None,
 
 
 _cache_mascaras: dict[tuple, pygame.mask.Mask] = {}
+_cache_fora: dict[int, pygame.mask.Mask] = {}
+_MASCARA_CHEIA = pygame.mask.Mask((sp.LARGURA_JANELA, sp.ALTURA_JANELA), fill=True)
 
 
 def _rasterizar(poligonos: list[list[tuple[int, int]]], w: int, h: int) -> pygame.mask.Mask:
@@ -186,10 +192,13 @@ def _rasterizar(poligonos: list[list[tuple[int, int]]], w: int, h: int) -> pygam
 
 def aplicar_regiao(sup: pygame.Surface, mascara: pygame.mask.Mask) -> None:
     """Pinta de magenta e torna transparente o que está fora da região (como no Winamp)."""
-    if mascara.count() == mascara.get_size()[0] * mascara.get_size()[1]:
+    fora = _cache_fora.get(id(mascara))
+    if fora is None:
+        fora = mascara.copy()
+        fora.invert()
+        _cache_fora[id(mascara)] = fora  # as máscaras ficam vivas em _cache_mascaras
+    if fora.count() == 0:
         return
-    fora = mascara.copy()
-    fora.invert()
     fora.to_surface(sup, setcolor=COR_TRANSPARENTE, unsetcolor=None)
     sup.set_colorkey(COR_TRANSPARENTE)
 

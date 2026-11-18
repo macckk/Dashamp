@@ -27,25 +27,11 @@ gi.require_version("GstAudio", "1.0")
 from gi.repository import GLib, Gst, GstAudio  # noqa: E402
 
 from player.espectro import BARRAS, Agrupador  # noqa: E402
+from player.tipos_audio import Evento, Tags  # noqa: E402,F401  (reexportados)
 
 N_BANDAS = 512             # 43 Hz por banda a 44,1 kHz: resolução para as barras graves
 INTERVALO_ESPECTRO_MS = 50  # ~20 atualizações por segundo
 _RE_MAGNITUDE = re.compile(r"magnitude=\(float\)\{([^}]*)\}")
-
-
-@dataclass
-class Tags:
-    titulo: str = ""
-    artista: str = ""
-    kbps: int = 0
-    khz: int = 0
-    canais: int = 0
-
-
-@dataclass
-class Evento:
-    tipo: str          # "fim", "erro", "aviso"
-    texto: str = ""
 
 
 @dataclass

@@ -66,11 +66,25 @@ class App:
             elif ao_evento is not None:
                 ao_evento(ev)
 
+    def _esperar_quadro(self) -> None:
+        """Dorme até o próximo horário absoluto de quadro (múltiplos de 1/30 s).
+
+        O Clock.tick(30) dorme 33 ms a partir de agora; com um núcleo dividido com o GStreamer o
+        processo acorda ~1 ms atrasado e o atraso se soma (29,4 fps medidos no Eee PC). Com prazos
+        absolutos, o atraso de um quadro é descontado no seguinte e a média fica em 30."""
+        self._proximo += 1.0 / FPS_ALVO
+        espera = self._proximo - time.perf_counter()
+        if espera > 0:
+            time.sleep(espera)
+        elif espera < -1.0 / FPS_ALVO:
+            self._proximo = time.perf_counter()  # atrasou mais de um quadro: não corre para compensar
+
     def rodar(self, quadro: FuncaoQuadro, ao_evento: FuncaoEvento | None = None) -> None:
         primeiro = True
+        self._proximo = time.perf_counter()
         while self.rodando:
-            # tick() dorme até completar o quadro (não fica girando a CPU).
-            dt = self.relogio.tick(FPS_ALVO) / 1000.0
+            self._esperar_quadro()
+            dt = self.relogio.tick() / 1000.0  # só mede (fps e dt); quem dorme é _esperar_quadro
             self._tratar_eventos(ao_evento)
             sujos = quadro(self.tela, dt)
             if sujos is None or primeiro:

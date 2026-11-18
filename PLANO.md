@@ -148,7 +148,7 @@ publicando magnitudes numa fila lida pelo laço do pygame.
 
 **Aceite:** MP3 de 320 kbps toca sem falhas por 5 minutos; CPU total ≤ 50% só com áudio + espectro.
 
-### [ ] F1.6 Player funcional
+### [x] F1.6 Player funcional
 **Fazer:** ligar a interface ao áudio: tempo em dígitos, letreiro rolando com título/artista (tags),
 kbps/kHz, barra de posição, analisador de barras com as cores de `viscolor.txt`, atalhos Z X C V B,
 setas para volume/busca.

@@ -1,7 +1,30 @@
 # Estado do Dashamp
 
-Última tarefa concluída: **F1.5** (motor de áudio).
-Próxima: **F1.6** — player funcional.
+Última tarefa concluída: **F1.6** (player funcional).
+Próxima: **F1.7** — playlist.
+
+## Player funcional (F1.6)
+
+- `player/main.py` (`python -m player.main [arquivos/pastas] --skin X --escala 1|2`; `player` no
+  `.app`): janela da skin em 2× no centro da tela, ligada ao `MotorAudio`. Tempo nos dígitos,
+  letreiro "N. Artista - Título (m:ss)" rolando 1 caractere a cada 0,2 s em círculo (`  ***  `),
+  kbps/kHz, mono/estéreo, cursor de posição, volume, aleatório/repetir.
+  Atalhos: Z X C V B, ↑/↓ volume ±5, ←/→ ±5 s, S aleatório, R repetir. Fim da faixa segue a lista;
+  no fim para (ou recomeça com repetir).
+- `player/analisador.py`: 19 barras de 3 px (+1 de espaço) em 76×16; cores do viscolor (0 fundo,
+  1 pontos, 2–17 barras de cima para baixo, 23 pico); sobe na hora, cai 2,2 alturas/s; pico para
+  0,4 s e cai. Fundo e coluna de cores pré-renderizados.
+- Sem alocação por quadro: `desenhar(..., destino)` reaproveita a superfície 275×116; a máscara de
+  região invertida fica em cache; a ampliação 2× usa `transform.scale(..., dest)`.
+- **Laço de quadros com prazos absolutos** (`core/app.py`): com `Clock.tick(30)` o player ficava em
+  29,4 fps; com um núcleo dividido com o GStreamer, o processo acorda ~1 ms atrasado a cada quadro e
+  o atraso se acumulava. Prazos em múltiplos de 1/30 s descontam o atraso no quadro seguinte.
+- `player/tipos_audio.py` (Tags, Evento) e `player/audio_falso.py` (`MotorFalso`): testes do player
+  no PC, sem GStreamer.
+- **Aceite no Eee PC** (tocando o MP3 de teste, 60 s): **30,0 fps** estáveis (28,6 só no intervalo
+  em que a captura PNG é gravada), CPU do processo 49% (áudio ~25% + interface ~24%), **CPU do
+  sistema 54,8%**, RSS 61 MB. Captura conferida: analisador animado, letreiro rolando, tempo,
+  kbps/kHz e estéreo. Testes: 31 passam.
 
 ## Áudio (F1.5)
 
