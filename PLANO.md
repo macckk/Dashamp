@@ -72,7 +72,7 @@ e `speaker-test -c2 -l1` gera som. `df -h /` ainda mostra ≥ 1,5 GB livres.
 
 **Aceite:** `./deploy/deploy.sh` roda sem erro e `ssh eeepc '~/dashamp/.venv/bin/python -c "import pygame, gi; print(pygame.version.ver)"'` imprime a versão.
 
-### [ ] F0.6 Proteger o flash
+### [x] F0.6 Proteger o flash
 **Fazer:** `noatime` no `/etc/fstab`; `/tmp` em tmpfs; journald com `Storage=volatile` e
 `RuntimeMaxUse=16M`; desativar serviços desnecessários (listar com `systemctl list-unit-files --state=enabled`
 e propor a lista antes de desativar).

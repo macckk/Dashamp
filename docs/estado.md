@@ -1,7 +1,23 @@
 # Estado do Dashamp
 
-Última tarefa concluída: **F0.5** (repositório, venv e deploy).
-Próxima: **F0.6** — proteger o flash.
+Última tarefa concluída: **F0.6** (proteger o flash).
+Próxima: **F0.7** — núcleo mínimo: janela, métricas e captura.
+
+## Flash (F0.6)
+
+- `fstab` (backup em `/etc/fstab.antes-f06`, validado com `findmnt --verify`):
+  `noatime` no `/`; `/tmp` em tmpfs de 100 MB (`nosuid,nodev,noatime`); **swap comentada**
+  (a partição `sda5` continua lá, só não é usada; o `RESUME=` do initramfs aponta para ela e é inofensivo).
+- journald: `/etc/systemd/journald.conf.d/10-dashamp.conf` com `Storage=volatile` e
+  `RuntimeMaxUse=16M`; journal antigo do flash (`/var/log/journal`, 17 MB) apagado com aprovação.
+- Desativados (aprovados pelo mantenedor): `bluetooth` (sem hardware), `wpa_supplicant` (Wi-Fi
+  não detectado; religar na F3.7 se aparecer), `apt-daily` e `apt-daily-upgrade` (atualizações agora
+  manuais), `man-db`, `anacron`, `dpkg-db-backup`, `e2scrub_all`/`e2scrub_reap` (sem LVM) e
+  `fstrim` (o flash não aceita TRIM).
+- Mantidos: `ssh`, `networking`, `getty`, `cron`, `logrotate`, `systemd-timesyncd`, `apparmor`,
+  `console-setup`, `keyboard-setup`, `systemd-pstore`.
+- Após o reboot: SSH de volta em ~45 s; boot de 28,8 s (13,1 s kernel + 15,7 s userspace);
+  nenhuma unidade com falha; 435 MB de RAM disponíveis ociosa; 1,6 GB livres.
 
 ## Venv e deploy (F0.5)
 
