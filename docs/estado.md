@@ -1,7 +1,33 @@
 # Estado do Dashamp
 
-Última tarefa concluída: **F1.3** (mapa de sprites).
-Próxima: **F1.4** — janela principal estática.
+Última tarefa concluída: **F1.4** (janela principal estática).
+Próxima: **F1.5** — motor de áudio.
+
+## Janela principal (F1.4)
+
+- `player/janela_principal.py`: `EstadoJanela` (reprodução, tempo, título, kbps/kHz, mono/estéreo,
+  volume, balanço, posição, aleatório/repetir/EQ/PL, título ativo) → `desenhar(skin, estado)` monta
+  os 275×116; `ampliar(sup, 2)` dobra os pixels (vizinho mais próximo).
+- **Referência**: o screenshot de cada skin no Winamp Skin Museum (renderizado pelo Webamp), baixado
+  por `scripts/baixar_skins.sh` para `player/skins_teste/<nome>.png` (ignorado pelo Git).
+  `ESTADO_REFERENCIA` reproduz o estado desses screenshots: tocando, 00:03, "1. DJ Mike Llama -
+  Llama Whippin' Intro", 128 kbps, 44 kHz, estéreo, volume 75%, balanço 0, posição 60%, e
+  **aleatório, repetir, EQ e PL ligados**.
+- `player/comparar_referencia.py` compara pixel a pixel, ignorando a área do analisador (24,43,76×16;
+  animada) e os pixels fora da região da janela. **Resultado no Eee PC: 0 pixels diferentes nas três
+  skins**; a captura da tela real (1× e 2×) também bate pixel a pixel com a referência.
+- Ajustes descobertos comparando com a referência (todos conferidos nas três skins):
+  - volume: quadro = `floor(v·28/100)`, limitado a 27 (75% → quadro 21, não 20);
+  - indicador de 3 px: x=36 do `playpaus.bmp` é o verde (com sinal), x=39 o vermelho; ele é
+    desenhado **por cima** do ▶ (os nomes estavam trocados na F1.3);
+  - letreiro com **155 px** de largura (31 caracteres), não 154;
+  - clutter bar (OAIDV) do `titlebar.bmp` (304,0 8×43) em (10,22).
+- **`region.txt`** (seção `[Normal]`): lido em `core/skin.py` (`Skin.regiao`), rasterizado na regra do
+  Windows (centro do pixel dentro do polígono) e aplicado como transparência: fora da região a janela
+  mostra o fundo, como no Winamp. Winamp5 Classified: 58 pixels fora (cantos arredondados).
+- Tela estática no Eee PC: 29,2 fps, 4,5% de CPU, 48 MB. O fps fica um pouco abaixo dos 30,2 da
+  tela de teste da F0.7; acompanhar na F1.6, que tem aceite de ≥ 30 fps.
+- Testes: 20 passam no Eee PC (inclui a comparação com as referências).
 
 ## Mapa de sprites (F1.3)
 

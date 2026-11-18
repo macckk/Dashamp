@@ -136,7 +136,7 @@ código-fonte do Webamp como referência.
 **Aceite:** um script de inspeção desenha todos os sprites rotulados numa grade; a captura confere
 visualmente com a skin original.
 
-### [ ] F1.4 Janela principal estática
+### [x] F1.4 Janela principal estática
 **Fazer:** `player/janela_principal.py` desenha a janela de 275×116 (com escala 1× e 2×) usando a skin.
 
 **Aceite:** a captura no Eee PC fica idêntica a uma referência do Winamp com a mesma skin.

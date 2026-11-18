@@ -33,6 +33,11 @@ falhas=0
 for item in "${skins[@]}"; do
     IFS='|' read -r nome soma descricao <<<"$item"
     arquivo="$destino/$nome"
+    # Screenshot do Museum (renderizado pelo Webamp): referência visual da F1.4.
+    png="$destino/${nome%.wsz}.png"
+    if [[ ! -s "$png" ]]; then
+        baixar "https://r2.webampskins.org/screenshots/$soma.png" "$png" || rm -f "$png"
+    fi
     if [[ -f "$arquivo" && "$(md5 "$arquivo")" == "$soma" ]]; then
         echo "ok (já existe)  $nome — $descricao"
         continue

@@ -54,6 +54,8 @@ class Skin:
     imagens: dict[str, pygame.Surface] = field(default_factory=dict)
     viscolor: tuple[Cor, ...] = VISCOLOR_PADRAO
     pledit: dict[str, str] = field(default_factory=lambda: dict(PLEDIT_PADRAO))
+    # Formato da janela principal (region.txt, seção [Normal]): polígonos; None = retangular.
+    regiao: list[list[tuple[int, int]]] | None = None
     # Arquivos que não estavam na skin e vieram do fallback (ou faltam de vez).
     emprestados: list[str] = field(default_factory=list)
     ausentes: list[str] = field(default_factory=list)
@@ -104,6 +106,30 @@ def ler_pledit(texto: str) -> dict[str, str]:
             chave, valor = linha.split("=", 1)
             valores[chave.strip().lower()] = valor.strip()
     return valores
+
+
+def ler_regiao(texto: str, secao: str = "normal") -> list[list[tuple[int, int]]] | None:
+    """Polígonos de region.txt: NumPoints=4,4,... e PointList=x,y x,y ... (vírgulas ou espaços)."""
+    valores: dict[str, str] = {}
+    atual = None
+    for linha in texto.splitlines():
+        linha = linha.strip()
+        if linha.startswith("["):
+            atual = linha.strip("[]").strip().lower()
+        elif atual == secao and "=" in linha:
+            chave, valor = linha.split("=", 1)
+            valores[chave.strip().lower()] = valor
+    contagens = [int(n) for n in re.findall(r"\d+", valores.get("numpoints", ""))]
+    numeros = [int(n) for n in re.findall(r"-?\d+", valores.get("pointlist", ""))]
+    pontos = list(zip(numeros[0::2], numeros[1::2]))
+    if not contagens or sum(contagens) > len(pontos):
+        return None
+    poligonos, i = [], 0
+    for n in contagens:
+        if n >= 3:
+            poligonos.append(pontos[i:i + n])
+        i += n
+    return poligonos or None
 
 
 def hex_para_cor(valor: str) -> Cor:
@@ -162,6 +188,8 @@ def carregar(caminho: str, padrao: Skin | None = None) -> Skin:
             skin.pledit = ler_pledit(zf.read(indice["pledit.txt"]).decode("latin-1"))
         elif padrao is not None:
             skin.pledit = dict(padrao.pledit)
+        if "region.txt" in indice:  # sem fallback: cada skin tem o próprio formato (ou nenhum)
+            skin.regiao = ler_regiao(zf.read(indice["region.txt"]).decode("latin-1"))
     _completar(skin, padrao)
     return skin
 

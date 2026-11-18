@@ -44,6 +44,8 @@ SPRITES: dict[str, Sprite] = {
     "botao_recolher_press": _s("titlebar", 9, 18, 9, 9),
     "botao_fechar": _s("titlebar", 18, 0, 9, 9),
     "botao_fechar_press": _s("titlebar", 18, 9, 9, 9),
+    "clutter_bar": _s("titlebar", 304, 0, 8, 43),
+    "clutter_bar_inativa": _s("titlebar", 312, 0, 8, 43),
     # cbuttons.bmp — controles de reprodução
     "anterior": _s("cbuttons", 0, 0, 23, 18),
     "anterior_press": _s("cbuttons", 0, 18, 23, 18),
@@ -78,8 +80,10 @@ SPRITES: dict[str, Sprite] = {
     "estado_tocando": _s("playpaus", 0, 0, 9, 9),
     "estado_pausado": _s("playpaus", 9, 0, 9, 9),
     "estado_parado": _s("playpaus", 18, 0, 9, 9),
-    "estado_sem_sinal": _s("playpaus", 36, 0, 3, 9),
-    "estado_com_sinal": _s("playpaus", 39, 0, 3, 9),
+    # Indicador de 3 px à esquerda do estado (desenhado por cima dele): verde tocando normalmente,
+    # vermelho sem sinal/carregando. Conferido contra os screenshots do Museum.
+    "estado_com_sinal": _s("playpaus", 36, 0, 3, 9),
+    "estado_sem_sinal": _s("playpaus", 39, 0, 3, 9),
     # monoster.bmp
     "estereo_lig": _s("monoster", 0, 0, 29, 12),
     "estereo": _s("monoster", 0, 12, 29, 12),
@@ -117,6 +121,7 @@ POSICOES: dict[str, tuple[int, int]] = {
     "botao_minimizar": (244, 3),
     "botao_recolher": (254, 3),
     "botao_fechar": (264, 3),
+    "clutter_bar": (10, 22),
     "estado": (26, 28),
     "sinal": (24, 28),
     "menos": (36, 26),           # o traço de numbers.bmp vai em (39, 32)
@@ -125,7 +130,7 @@ POSICOES: dict[str, tuple[int, int]] = {
     "segundo_dezena": (78, 26),
     "segundo_unidade": (90, 26),
     "visualizacao": (24, 43),    # área de 76×16
-    "letreiro": (111, 27),       # 154 px de largura (~30 caracteres)
+    "letreiro": (111, 27),       # 155 px de largura (31 caracteres)
     "kbps": (111, 43),           # 3 caracteres
     "khz": (156, 43),            # 2 caracteres
     "mono": (212, 41),
@@ -145,7 +150,7 @@ POSICOES: dict[str, tuple[int, int]] = {
     "repetir": (210, 89),
 }
 TAMANHO_VISUALIZACAO = (76, 16)
-LARGURA_LETREIRO = 154
+LARGURA_LETREIRO = 155  # conferido contra os screenshots do Museum (não 154)
 
 # ---------------------------------------------------------------------------
 # Fonte de text.bmp: grade de 5×6 (31 colunas). Caractere -> (linha, coluna).
