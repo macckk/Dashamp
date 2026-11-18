@@ -128,7 +128,7 @@ para a skin padrão quando faltar arquivo.
 
 **Aceite:** testes em `testes/test_skin.py` passam no Eee PC para as três skins; tempo de carga < 1 s.
 
-### [ ] F1.3 Mapa de sprites
+### [x] F1.3 Mapa de sprites
 **Fazer:** `player/sprites.py`: tabela de coordenadas de cada elemento (botões normal/pressionado,
 dígitos, letreiro, barras de posição/volume/balanço, indicadores mono/estéreo, play/pause), usando o
 código-fonte do Webamp como referência.

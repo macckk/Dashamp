@@ -1,7 +1,22 @@
 # Estado do Dashamp
 
-Última tarefa concluída: **F1.2** (leitor de `.wsz`).
-Próxima: **F1.3** — mapa de sprites.
+Última tarefa concluída: **F1.3** (mapa de sprites).
+Próxima: **F1.4** — janela principal estática.
+
+## Mapa de sprites (F1.3)
+
+- `player/sprites.py`: `SPRITES` (nome → BMP + retângulo), `POSICOES` (onde cada elemento fica na
+  janela de 275×116), fonte de `text.bmp` (grade 5×6, 31 colunas, com equivalências como `<`→`(`) e
+  funções `recortar`, `digito` (prefere `nums_ex`), `caractere`, `volume_fundo`/`balanco_fundo`
+  (28 quadros a cada 15 px; balanço a partir de x=9). Coordenadas conferidas com o Webamp (MIT).
+- Recortes são `subsurface` (sem cópia) **limitados ao BMP**: retângulo fora vira `None` em vez de
+  erro (a Zelda tem `volume.bmp` de 420 px e não tem cursor de volume).
+- `player/inspecionar_sprites.py`: grade 2× rotulada, paginada (setas/Espaço), sprite ausente em
+  vermelho. Capturas das três skins tiradas no Eee PC e conferidas com os BMPs originais.
+- `testes/test_sprites.py`: todo sprite cabe nos BMPs da base-2.91, posições dentro da janela,
+  fonte, quadros de volume/balanço e os casos da Zelda. No Eee PC: 14 testes passam (4,8 s).
+- Observação para a F1.4: algumas skins (ex.: Winamp5 Classified) já trazem botões desenhados no
+  `main.bmp`; o desenho por cima com `cbuttons.bmp` cobre exatamente as mesmas áreas.
 
 ## Leitor de skins (F1.2)
 
