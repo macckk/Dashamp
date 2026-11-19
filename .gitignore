@@ -15,3 +15,6 @@ player/skins_teste/
 
 # Material local de trabalho (não faz parte do projeto)
 Claude outputs/
+
+# logs do ELM327-emulator (gravados na pasta onde ele roda)
+elm.log*
