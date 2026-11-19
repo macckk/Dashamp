@@ -6,6 +6,9 @@ Todo app do projeto usa `App` e ganha as opções comuns:
   --duracao N     encerra sozinho após N segundos (testes e medições pelo SSH)
   --janela        janela com bordas e cursor (desenvolvimento no PC)
 
+Quando aberto pelo deploy/run.sh (variável DASHAMP_ARQUIVO_APP), as teclas F1, F2 e F3 trocam
+de app: gravam a escolha no ~/dashamp/.app e encerram; o laço do .xinitrc abre o app novo.
+
 `python -m core.app` abre uma tela de teste (barras de cor, moldura, quadrado animado e fps).
 """
 from __future__ import annotations
@@ -26,6 +29,50 @@ from core.metricas import Metricas
 
 LARGURA, ALTURA = 800, 480
 FPS_ALVO = 30
+
+# Tecla → linha do .app (ver deploy/run.sh).
+ATALHOS_APP = {pygame.K_F1: "player", pygame.K_F2: "painel --udp", pygame.K_F3: "painel"}
+
+
+def arquivo_app() -> str | None:
+    return os.environ.get("DASHAMP_ARQUIVO_APP") or None
+
+
+def gravar_app(linha: str) -> bool:
+    """Grava a linha do .app (só quando o app foi aberto pelo run.sh)."""
+    caminho = arquivo_app()
+    if caminho is None:
+        return False
+    with open(caminho, "w", encoding="utf-8") as f:
+        f.write(linha.strip() + "\n")
+    return True
+
+
+def linha_atalho(tecla: int) -> str:
+    """Linha do .app para a tecla; o painel mantém o tema que estava escolhido."""
+    linha = ATALHOS_APP[tecla]
+    caminho = arquivo_app()
+    if linha.startswith("painel") and caminho and os.path.isfile(caminho):
+        with open(caminho, encoding="utf-8") as f:
+            atual = f.readline().split()
+        if "--tema" in atual and atual.index("--tema") + 1 < len(atual):
+            linha += " --tema " + atual[atual.index("--tema") + 1]
+    return linha
+
+
+def lembrar_opcao(opcao: str, valor: str) -> None:
+    """Troca (ou acrescenta) `opcao valor` na linha atual do .app, para valer no próximo boot."""
+    caminho = arquivo_app()
+    if caminho is None or not os.path.isfile(caminho):
+        return
+    with open(caminho, encoding="utf-8") as f:
+        partes = f.readline().split()
+    if opcao in partes:
+        i = partes.index(opcao)
+        partes[i + 1:i + 2] = [valor]
+    else:
+        partes += [opcao, valor]
+    gravar_app(" ".join(partes))
 
 # Desenha o quadro na tela. Devolve os retângulos alterados (atualização parcial)
 # ou None para atualizar a tela inteira.
@@ -62,6 +109,9 @@ class App:
             if ev.type == pygame.QUIT:
                 self.rodando = False
             elif ev.type == pygame.KEYDOWN and ev.key in (pygame.K_ESCAPE, pygame.K_q):
+                self.rodando = False
+            elif ev.type == pygame.KEYDOWN and ev.key in ATALHOS_APP and arquivo_app():
+                gravar_app(linha_atalho(ev.key))
                 self.rodando = False
             elif ao_evento is not None:
                 ao_evento(ev)

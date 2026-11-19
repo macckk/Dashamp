@@ -6,6 +6,7 @@
 #   player [arquivos/pastas]   -> player com skin (padrão: ~/musica)
 #   painel [--tema nome]       -> painel de instrumentos com a fonte simulada
 #   teste                      -> tela de teste do núcleo
+#   (no Eee PC: F1 = player, F2 = painel recebendo o F1 24, F3 = painel com a simulação)
 #   nada                       -> nenhum app (X ocioso; para medições sem interferência)
 #   <módulo python> [args]     -> qualquer outro módulo, ex.: core.app --metricas
 set -u
@@ -28,6 +29,8 @@ case "$nome" in
 esac
 
 cd "$raiz" || exit 1
+# Os apps usam isto para trocar de app pelas teclas F1/F2/F3 (gravam o .app e saem).
+export DASHAMP_ARQUIVO_APP="$raiz/.app"
 # Saída no /tmp (tmpfs): nada grava no flash. O arquivo recomeça a cada abertura do app.
 # shellcheck disable=SC2086  # extras: argumentos separados por espaço, de propósito
 exec "$python" -m "$modulo" "${base[@]}" $extras >/tmp/dashamp.log 2>&1

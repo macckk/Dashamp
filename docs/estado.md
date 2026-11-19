@@ -1,7 +1,25 @@
 # Estado do Dashamp
 
 Última tarefa concluída: **F2.7** (`FonteUDPF1`, F1 24).
-Próxima: **F2.8** `[HUMANO]` — corrida de teste com o jogo enviando telemetria ao Eee PC.
+**Pendente: F2.8** `[HUMANO]` — corrida de teste com o jogo (o mantenedor vai fazer em casa, com o
+F1 24 no PS5). Decisão do mantenedor: seguir para a fase 3 enquanto isso.
+Próxima: **F3.1** — `FonteOBD` contra o emulador.
+
+## Preparação para a F2.8 em casa (sem SSH)
+
+- Uma primeira resposta "acompanhou bem" não correspondia a um teste com o jogo (não havia jogo
+  disponível): os contadores do Eee PC (`/proc/net/snmp` InDatagrams, RX da placa) mostraram que
+  nenhum pacote chegou. A F2.8 continua aberta.
+- **Teclas no Eee PC** (para usar sem SSH): F1 = player, F2 = painel recebendo o F1 24
+  (`painel --udp`), F3 = painel com a simulação. O `run.sh` exporta `DASHAMP_ARQUIVO_APP`; o
+  `core.app` grava a escolha no `.app` e encerra, e o laço do `.xinitrc` abre o app novo (o tema
+  escolhido é mantido). No PC de desenvolvimento (sem a variável) as teclas não fazem nada.
+- O tema escolhido com **T** fica gravado no `.app` (`--tema`), valendo para o próximo boot.
+- `painel --udp` mostra, enquanto não chega telemetria, uma caixa com o **IP do Eee PC** e a porta
+  (consulta o IP a cada 5 s, para o caso de a rede subir depois do app); some no primeiro pacote.
+- Rede: `enp3s0` por DHCP (`allow-hotplug`), então funciona em outra rede; o Wi-Fi não funciona
+  (F0.3), por isso em casa é preciso o **cabo de rede ligado antes de ligar o Eee PC**.
+- Boot deixado em `painel --udp`.
 
 ## FonteUDPF1 (F2.7)
 
