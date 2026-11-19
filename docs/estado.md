@@ -1,7 +1,32 @@
 # Estado do Dashamp
 
-Última tarefa concluída: **F2.2** (`FonteSimulada`).
-Próxima: **F2.3** — formato de gravação (SQLite) e `FonteReplay`.
+Última tarefa concluída: **F2.3** (formato de gravação e `FonteReplay`).
+Próxima: **F2.4** — widgets.
+
+## Gravação de viagens e FonteReplay (F2.3)
+
+- Formato (`painel/gravacao.py`, versão 1): um SQLite por viagem com `metadados(chave, valor)`
+  (versao, criado_em em UTC, fonte, hz e o que vier; no fechamento duracao_s e leituras),
+  `canais(id, nome, unidade)` e `leituras(t, canal, valor)` com `canal` inteiro (economiza ~30%
+  do tamanho). Sem índice: as linhas ficam em ordem de gravação e a leitura é sequencial.
+  Canais fora do catálogo são registrados assim mesmo.
+- `Gravador(caminho, metadados, intervalo_s=10)`: acumula em memória e grava em **lote**, uma
+  transação a cada 10 s (`synchronous=NORMAL`); queda de energia perde no máximo o último lote e o
+  arquivo continua íntegro. `acompanhar(fonte)` assina a fonte (`Fonte.assinar`, novo na F2.3:
+  callback em cada publicação, na thread da fonte), para não perder leituras como aconteceria
+  lendo `ultima()` pelo laço de quadros.
+- `ler_viagem(caminho)`: gerador de `(t, valores)`, lendo aos poucos (não carrega o arquivo todo
+  na RAM do Eee PC); recusa versão de formato desconhecida.
+- `FonteReplay(caminho, velocidade=1, repetir=False)`: publica cada leitura no instante gravado
+  ÷ velocidade, com o `t` original; a velocidade muda durante a reprodução sem saltos (re-ancora o
+  relógio); valores acumulados (canal ausente mantém o último valor, útil para PIDs do OBD com
+  ritmos diferentes); `terminou` sinaliza o fim.
+- **Aceite no Eee PC** (`python -m painel.fontes.replay --verificar 60 --velocidade 4`): 60 s da
+  FonteSimulada em tempo real → 481 leituras em 6 lotes, **152 kB** (≈ 9 MB/h; os 200 MB de
+  rodízio da F3.4 guardam ~22 h); replay a 4× em **15,01 s** (esperado 15,00), **481 de 481
+  iguais** em `t` e em todos os valores. A 1×: 20 s em 20,01 s, iguais. 66 testes passam.
+- Nos testes, gravar com uma transação por leitura levava 10 s no Windows (um fsync por commit):
+  os testes gravam num lote só, como o uso real.
 
 ## FonteSimulada (F2.2)
 

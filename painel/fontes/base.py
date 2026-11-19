@@ -11,6 +11,9 @@ Duas formas de escrever uma fonte:
 - `Fonte`: implemente `_rodar()` quando o ritmo vem de fora (socket UDP, porta serial do OBD),
   chamando `self._publicar(valores)` a cada dado novo e saindo quando `self._parar.is_set()`.
 
+Quem precisa de *todas* as leituras (o gravador) usa `assinar(func)`: `func(leitura)` é chamada
+na thread da fonte a cada publicação, e por isso deve ser rápida (só enfileirar).
+
 Os valores usam os nomes do catálogo `CANAIS` (unidades fixas: km/h, °C, %, V, L/h...). Cada
 leitura traz só os canais que a fonte conhece; o widget de um canal ausente fica parado.
 """
@@ -19,7 +22,7 @@ from __future__ import annotations
 import abc
 import threading
 import time
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field
 from types import MappingProxyType
 
@@ -77,6 +80,7 @@ class Fonte(abc.ABC):
         self._t0 = 0.0
         self.leituras = 0                # quantas leituras já publicou (para métricas e testes)
         self.erro: BaseException | None = None
+        self._assinantes: list[Callable[[Leitura], None]] = []
 
     # --- usado pelo app -----------------------------------------------------------
 
@@ -99,6 +103,14 @@ class Fonte(abc.ABC):
     def ultima(self) -> Leitura | None:
         with self._lock:
             return self._ultima
+
+    def assinar(self, func: Callable[[Leitura], None]) -> None:
+        """`func(leitura)` a cada leitura publicada, chamada na thread da fonte."""
+        self._assinantes.append(func)
+
+    def cancelar_assinatura(self, func: Callable[[Leitura], None]) -> None:
+        if func in self._assinantes:
+            self._assinantes.remove(func)
 
     @property
     def ativa(self) -> bool:
@@ -125,6 +137,8 @@ class Fonte(abc.ABC):
         with self._lock:
             self._ultima = leitura
             self.leituras += 1
+        for func in tuple(self._assinantes):
+            func(leitura)
         return leitura
 
     def _executar(self) -> None:

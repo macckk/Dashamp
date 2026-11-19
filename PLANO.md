@@ -187,7 +187,7 @@ Catálogo de canais com unidade e faixa (`rpm`, `velocidade`, `marcha`, `temp_mo
 
 **Aceite:** gravação de 60 s produz curvas plausíveis (verificar com um gráfico gerado no PC).
 
-### [ ] F2.3 Formato de gravação e `FonteReplay`
+### [x] F2.3 Formato de gravação e `FonteReplay`
 **Fazer:** definir o formato de viagem (SQLite: tabela `leituras(t, canal, valor)` + metadados) — o
 mesmo que o carputer vai gravar. `FonteReplay` toca o arquivo no tempo real, com velocidade ajustável.
 
