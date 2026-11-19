@@ -174,7 +174,7 @@ O mantenedor usa o player por alguns minutos no Eee PC e lista ajustes. Tratar a
 
 ## Fase 2 — Motor de mostradores
 
-### [ ] F2.1 Interface `Fonte`
+### [x] F2.1 Interface `Fonte`
 **Fazer:** `painel/fontes/base.py`: `dataclass Leitura(t: float, valores: dict[str, float])` e a classe
 abstrata `Fonte` com `iniciar()`, `parar()` e `ultima() -> Leitura | None`, rodando em thread própria.
 Catálogo de canais com unidade e faixa (`rpm`, `velocidade`, `marcha`, `temp_motor`, `temp_ar`,

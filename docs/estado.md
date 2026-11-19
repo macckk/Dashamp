@@ -1,7 +1,23 @@
 # Estado do Dashamp
 
-Última tarefa concluída: **F1.9** (teste de uso do player pelo mantenedor).
-Próxima: **F2.1** — interface `Fonte`.
+Última tarefa concluída: **F2.1** (interface `Fonte`).
+Próxima: **F2.2** — `FonteSimulada`.
+
+## Interface Fonte (F2.1)
+
+- `painel/fontes/base.py`: `Leitura(t, valores)` imutável (valores num `MappingProxyType`, para o
+  app poder guardar a leitura sem cópia); `Fonte` abstrata com `iniciar()`, `parar()`, `ultima()`,
+  `ativa`, `leituras` (contador), `erro` (exceção da thread, que não morre calada) e uso com `with`.
+  `ultima()` só troca uma referência sob um lock curto: o laço de quadros nunca espera a fonte.
+- Duas formas de fonte: `FontePeriodica(hz)` com `amostrar(t)` chamado em instantes absolutos
+  (sem deriva; se atrasar mais de um período, recomeça do agora), para simulação e replay; e
+  `Fonte._rodar()` livre, publicando com `_publicar()` quando chega dado (UDP, OBD).
+- Catálogo `CANAIS` (só leitura), com unidade, faixa e descrição: `rpm`, `velocidade`, `marcha`,
+  `temp_motor`, `temp_ar`, `acelerador`, `carga`, `pressao_coletor`, `tensao`, `combustivel_lh`,
+  `combustivel_nivel`. As descrições citam o PID do OBD-II de cada um (fase 3).
+  `Canal.limitar()` e `canais_desconhecidos()` para validar.
+- **Aceite**: 7 testes em `testes/test_fonte_base.py` passam no PC e no Eee PC (51 no total no
+  Eee PC). No Windows o `Event.wait` tem resolução de ~15 ms; o teste de ritmo usa 20 Hz.
 
 ## Teste de uso (F1.9)
 
