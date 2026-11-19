@@ -1,9 +1,37 @@
 # Estado do Dashamp
 
-Última tarefa concluída: **F2.7** (`FonteUDPF1`, F1 24).
-**Pendente: F2.8** `[HUMANO]` — corrida de teste com o jogo (o mantenedor vai fazer em casa, com o
-F1 24 no PS5). Decisão do mantenedor: seguir para a fase 3 enquanto isso.
+Última tarefa concluída: **F2.7b** (`FonteGT7`, Gran Turismo 7 no PS5).
+**Pendente: F2.8** `[HUMANO]` — corrida de teste com o GT7 (o mantenedor vai fazer em casa).
+Decisão do mantenedor: seguir para a fase 3 enquanto isso.
 Próxima: **F3.1** — `FonteOBD` contra o emulador.
+
+## FonteGT7 (F2.7b)
+
+- **Correção do mantenedor**: o jogo disponível é o Gran Turismo 7 no PS5, não o F1 24. A fonte do
+  F1 fica no projeto (`--udp`); a do GT7 virou a tarefa F2.7b e a F2.8 passa a ser com o GT7.
+- Protocolo (sem especificação oficial; o da comunidade): heartbeat b"A" para a porta UDP 33739
+  do PS5, repetido a cada 1 s; o PS5 responde na 33740 com pacotes de 296 bytes cifrados com
+  Salsa20 (chave = 32 primeiros bytes de "Simulator Interface Packet GT7 ver 0.0"; nonce =
+  `iv1 ^ 0xDEADBEAF` + `iv1`, com `iv1` nos bytes 0x40..0x43); assinatura 0x47375330. Campos:
+  0x3C rpm, 0x44/0x48 combustível/capacidade, 0x4C velocidade (m/s), 0x58 temperatura da água,
+  0x8E flags (pausado = bit 1, pacote ignorado), 0x90 marcha (nibble baixo), 0x91 acelerador
+  (0..255). **A corrida da F2.8 confirma**; em especial o que o GT7 manda como marcha na ré/neutro.
+- **Descoberta do PS5 sem digitar IP**: enquanto nada chega, o heartbeat vai para o broadcast e
+  para os 253 endereços da /24 a cada 3 s; quem responder é o PS5 (e se ele sumir por 10 s, volta a
+  procurar). `--ps5 IP` pula a descoberta.
+- **Dependência nova**: Salsa20 do `python3-pycryptodome` (apt, 6,8 MB; no Debian o módulo se
+  chama `Cryptodome`; no PC, `pycryptodome` do pip, módulo `Crypto` — o código aceita os dois).
+  Decifrar em Python puro a 60 Hz custaria boa parte da CPU do Eee PC.
+- `painel.main --gt7 [--ps5 IP]`; caixa de espera com o estado ("Procurando o PS5", "PS5
+  encontrado: entre na pista", "Sem rede: ligue o cabo"). **F2 agora abre `painel --gt7`.**
+  O GT7 não manda consumo nem tensão: no digital80 esses dígitos ficam em "---".
+- Simulador de PS5 (`python -m painel.fontes.gt7 --simular-ps5`): responde a heartbeats com
+  pacotes cifrados da FonteSimulada, para testar sem o console.
+- **Aceite**: 10 testes (cifra, campos, pausado, IV/pacote corrompido, gravação, alvos da
+  descoberta, heartbeat + recepção com um PS5 falso). No Eee PC, com o PC fingindo ser o PS5 e
+  **sem IP configurado**: o Eee PC achou o "PS5" pela descoberta, recebeu os pacotes e o painel
+  ficou a 30 fps com CPU de 5–13% (RSS 60 MB). Captura do digital80 conferida.
+- Boot deixado em `painel --gt7`.
 
 ## Preparação para a F2.8 em casa (sem SSH)
 

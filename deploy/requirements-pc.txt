@@ -3,3 +3,4 @@
 # a API comum aos dois (a do pygame 2.1.2): o aceite vale no Eee PC.
 pygame-ce==2.5.8
 pytest
+pycryptodome   # Salsa20 do GT7; no Eee PC vem do apt (python3-pycryptodome)

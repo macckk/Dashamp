@@ -101,7 +101,7 @@ dashamp/
   core/            # janela, laço de 30 fps, atlas de sprites, skins, fonte bitmap, métricas, captura
   player/          # leitor .wsz, áudio GStreamer, telas do player (skins_teste/ ignorada)
   painel/          # interface Fonte, widgets, temas
-    fontes/        # simulada.py, replay.py, udp_f1.py, obd.py
+    fontes/        # simulada.py, replay.py, udp_f1.py, gt7.py, obd.py
     temas/         # vintage/, digital80/, moderno/
   carputer/        # agendador de PIDs, gravação SQLite, sincronização
   deploy/          # deploy.sh, run.sh, units systemd, configs do sistema

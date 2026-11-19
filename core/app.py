@@ -31,7 +31,7 @@ LARGURA, ALTURA = 800, 480
 FPS_ALVO = 30
 
 # Tecla → linha do .app (ver deploy/run.sh).
-ATALHOS_APP = {pygame.K_F1: "player", pygame.K_F2: "painel --udp", pygame.K_F3: "painel"}
+ATALHOS_APP = {pygame.K_F1: "player", pygame.K_F2: "painel --gt7", pygame.K_F3: "painel"}
 
 
 def arquivo_app() -> str | None:

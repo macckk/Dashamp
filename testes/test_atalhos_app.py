@@ -39,7 +39,7 @@ def test_f3_e_f2_mantem_o_tema(app) -> None:
     assert arq.read_text(encoding="utf-8") == "painel --tema moderno\n"
     a.rodando = True
     _tecla(a, pygame.K_F2)
-    assert arq.read_text(encoding="utf-8") == "painel --udp --tema moderno\n"
+    assert arq.read_text(encoding="utf-8") == "painel --gt7 --tema moderno\n"
 
 
 def test_lembra_o_tema(app) -> None:

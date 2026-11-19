@@ -6,7 +6,7 @@
 #   player [arquivos/pastas]   -> player com skin (padrão: ~/musica)
 #   painel [--tema nome]       -> painel de instrumentos com a fonte simulada
 #   teste                      -> tela de teste do núcleo
-#   (no Eee PC: F1 = player, F2 = painel recebendo o F1 24, F3 = painel com a simulação)
+#   (no Eee PC: F1 = player, F2 = painel recebendo o GT7 do PS5, F3 = painel com a simulação)
 #   nada                       -> nenhum app (X ocioso; para medições sem interferência)
 #   <módulo python> [args]     -> qualquer outro módulo, ex.: core.app --metricas
 set -u

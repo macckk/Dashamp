@@ -226,8 +226,17 @@ pacotes brutos para testes offline.
 
 **Aceite:** um teste reproduz pacotes gravados e obtém valores corretos.
 
+### [x] F2.7b `FonteGT7` (Gran Turismo 7)
+**Correção do mantenedor:** o jogo disponível é o **Gran Turismo 7** no PS5, não o F1 (a fonte do F1
+fica no projeto). **Fazer:** `painel/fontes/gt7.py`: o Eee PC manda o "heartbeat" ao PS5 (porta 33739)
+e recebe os pacotes (porta 33740), cifrados com Salsa20; descobrir o PS5 na rede sozinho (sem
+digitar IP); mesmo gravador de pacotes brutos; simulador de PS5 para testar sem o console.
+
+**Aceite:** um teste reproduz pacotes gravados e obtém valores corretos; no Eee PC, o painel acha um
+PS5 simulado na rede e acompanha os dados.
+
 ### [ ] F2.8 `[HUMANO]` Corrida de teste
-O mantenedor configura o jogo para enviar telemetria ao IP do Eee PC e faz uma corrida.
+O mantenedor liga o GT7 no PS5, na mesma rede do Eee PC, e faz uma corrida.
 
 **Aceite:** o painel acompanha o jogo em tempo real nos três temas, sem atraso perceptível.
 
