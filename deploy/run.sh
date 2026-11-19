@@ -19,7 +19,9 @@ case "$nome" in
     bench) modulo="core.bench_ponteiro"; base=(--modo cache --mostradores 2) ;;
     player) modulo="player.main"; base=() ;;
     teste) modulo="core.app"; base=() ;;
-    nada)  exec sleep infinity ;;
+    # Espera o .app mudar (sem precisar matar nada) e sai; o laço do .xinitrc abre o novo app.
+    nada)  while [[ "$(head -n1 "$raiz/.app" 2>/dev/null)" == nada* ]]; do sleep 2; done
+           exit 0 ;;
     *)     modulo="$nome"; base=() ;;
 esac
 

@@ -1,7 +1,17 @@
 # Estado do Dashamp
 
-Última tarefa concluída: **F1.8** (troca de skin e equalizador).
-Próxima: **F1.9** `[HUMANO]` — o mantenedor usa o player e lista ajustes.
+Última tarefa concluída: **F1.9** (teste de uso do player pelo mantenedor).
+Próxima: **F2.1** — interface `Fonte`.
+
+## Teste de uso (F1.9)
+
+- O mantenedor usou o player no Eee PC. Único ajuste: som baixo mesmo no volume máximo do player;
+  causa e correção no ALSA (ver Decisões, F1.9).
+- Tela cheia foi discutida (playlist larga de 400 px, janela principal a ~2,9×, faixas laterais,
+  esticar): decidido **manter o layout atual** (2×, centralizado).
+- `deploy/run.sh`: o modo `nada` agora espera o `.app` mudar e sai sozinho (antes era um
+  `sleep infinity` que o `pkill` do deploy não encerrava, e o app novo não abria).
+- O player passa a ser o app do boot (`.app` = `player`).
 
 ## Troca de skin e equalizador (F1.8)
 
@@ -343,3 +353,6 @@ Com 512 MB de RAM, o orçamento do app gráfico **cai para RSS ≤ 120 MB** (em 
 - **F0.0** — `.gitattributes` com `eol=lf` para todo texto: o PC de desenvolvimento é Windows
   (`core.autocrlf=true`) e scripts com CRLF quebram no Linux do Eee PC.
 - **F0.0** — a pasta local `Claude outputs/` (rascunhos de trabalho) fica no `.gitignore`.
+- **F1.9** — o `Master` do ALSA estava em 44/64 (-20 dB) e o som saía baixo mesmo com o player
+  no máximo. Subido para 100% (0 dB) e salvo com `sudo alsactl store` (restaurado no boot pelo
+  `alsa-restore`). Headphone, Speaker e PCM já estavam em 100%.

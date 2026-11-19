@@ -167,7 +167,7 @@ com `eqmain.bmp`, se o tempo permitir.
 
 **Aceite:** a troca de skin leva < 1 s e não vaza memória (RSS estável após 20 trocas).
 
-### [ ] F1.9 `[HUMANO]` Teste de uso
+### [x] F1.9 `[HUMANO]` Teste de uso
 O mantenedor usa o player por alguns minutos no Eee PC e lista ajustes. Tratar a lista antes da fase 2.
 
 ---
