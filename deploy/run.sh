@@ -4,6 +4,7 @@
 #   bench                      -> bench do ponteiro (cache, dois mostradores)
 #   bench --metricas           -> idem, imprimindo métricas em /tmp/dashamp.log
 #   player [arquivos/pastas]   -> player com skin (padrão: ~/musica)
+#   painel [--tema nome]       -> painel de instrumentos com a fonte simulada
 #   teste                      -> tela de teste do núcleo
 #   nada                       -> nenhum app (X ocioso; para medições sem interferência)
 #   <módulo python> [args]     -> qualquer outro módulo, ex.: core.app --metricas
@@ -18,6 +19,7 @@ read -r nome extras <<<"$linha"
 case "$nome" in
     bench) modulo="core.bench_ponteiro"; base=(--modo cache --mostradores 2) ;;
     player) modulo="player.main"; base=() ;;
+    painel) modulo="painel.main"; base=() ;;
     teste) modulo="core.app"; base=() ;;
     # Espera o .app mudar (sem precisar matar nada) e sai; o laço do .xinitrc abre o novo app.
     nada)  while [[ "$(head -n1 "$raiz/.app" 2>/dev/null)" == nada* ]]; do sleep 2; done

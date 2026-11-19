@@ -1,7 +1,29 @@
 # Estado do Dashamp
 
-Última tarefa concluída: **F2.4** (widgets).
-Próxima: **F2.5** — formato de tema (`tema.json`).
+Última tarefa concluída: **F2.5** (formato de tema).
+Próxima: **F2.6** — três temas (vintage, digital80, moderno) gerados por código.
+
+## Formato de tema (F2.5)
+
+- `painel/tema.py`: `carregar(nome_ou_pasta) -> Tema(nome, pasta, painel, segundos_carga)` lê
+  `painel/temas/<nome>/tema.json` (versão 1) + PNGs da pasta. Formato documentado no docstring do
+  módulo: `fundo` (cor, imagem), `imagens` (enfeites), `textos` (rótulos com tamanho, cor e
+  alinhamento) e `widgets` (tipo `ponteiro`, `barra`, `digitos`, `luz` ou `historico`; cada campo
+  vira o parâmetro de mesmo nome do widget; `faixa` [mín, máx]; `zonas` [[de, até, cor]]; cores
+  "#rrggbb" ou [r, g, b]). O fundo (cor + imagens + textos + partes estáticas dos widgets) é
+  composto uma vez na carga.
+- `Ponteiro` ganhou `sprite` (PNG do tema, pivô no centro apontando para a direita), `escala`
+  (false = a face vem da imagem do tema) e `cubo`.
+- Validação: **todos** os erros do arquivo numa `ErroTema` só, cada um com o caminho do campo e
+  o que se esperava, ex.: `widgets[1] (barra 'temp_motor').segmentos: esperado um número inteiro,
+  veio texto "vinte"`; também JSON malformado (linha e coluna), versão, campos desconhecidos
+  (lista os válidos), canal fora do catálogo (lista os canais), faixa invertida, PNG ausente,
+  widget saindo da tela de 800×480 e tema inexistente (lista os temas).
+- `python -m painel.main [--tema exemplo] [--replay viagem.db]` (e `painel` no `.app`); tema
+  inválido sai com código 2 e a lista de erros. `painel/temas/exemplo/` = layout da tela de teste.
+- **Aceite no Eee PC**: tema `exemplo` (10 widgets) carregado em **174–235 ms** com o cache de
+  disco esvaziado; 30,0 fps, CPU 8–15%, RSS 54 MB. Um tema com 9 erros mostra os 9 de uma vez e
+  sai com código 2. 19 testes novos em `testes/test_tema.py`.
 
 ## Widgets (F2.4)
 

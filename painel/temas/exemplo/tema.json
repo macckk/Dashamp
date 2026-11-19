@@ -1,0 +1,34 @@
+{
+  "versao": 1,
+  "nome": "Exemplo",
+  "fundo": {"cor": "#0a0a0e"},
+  "textos": [
+    {"texto": "km/h", "pos": [700, 110], "tamanho": 22, "cor": "#9696a0"},
+    {"texto": "temp. motor 20-130 °C", "pos": [460, 150], "tamanho": 22, "cor": "#9696a0"},
+    {"texto": "acelerador", "pos": [460, 212], "tamanho": 22, "cor": "#9696a0"},
+    {"texto": "velocidade, últimos 60 s", "pos": [460, 465], "tamanho": 22, "cor": "#9696a0"}
+  ],
+  "widgets": [
+    {"tipo": "ponteiro", "canal": "rpm", "faixa": [0, 8000], "centro": [220, 240], "raio": 200,
+     "passo_maior": 1000, "divisor": 1000, "rotulo": "x1000 rpm",
+     "zonas": [[6000, 8000, "#e6281e"]]},
+    {"tipo": "digitos", "canal": "marcha", "faixa": [0, 6], "pos": [204, 318], "digitos": 1,
+     "altura": 56, "tau": 0, "cor": "#232323", "cor_apagada": "#ded6be"},
+    {"tipo": "digitos", "canal": "velocidade", "faixa": [0, 260], "pos": [480, 28],
+     "digitos": 3, "altura": 96, "cor": "#ff501e", "zonas": [[121, 260, "#ffaa00"]]},
+    {"tipo": "barra", "canal": "temp_motor", "faixa": [20, 130], "ret": [460, 168, 320, 26],
+     "segmentos": 22, "zonas": [[20, 60, "#3c8cff"], [105, 130, "#e6281e"]]},
+    {"tipo": "barra", "canal": "acelerador", "faixa": [0, 100], "ret": [460, 230, 320, 16],
+     "segmentos": 25, "tau": 0.08, "cor": "#28dc3c", "zonas": [[85, 100, "#ffaa00"]]},
+    {"tipo": "luz", "canal": "rpm", "centro": [490, 292], "raio": 12, "rotulo": "TROCA",
+     "piscar_hz": 6, "zonas": [[5000, 9000, "#e6281e"]]},
+    {"tipo": "luz", "canal": "temp_motor", "centro": [570, 292], "raio": 12, "rotulo": "TEMP",
+     "zonas": [[-40, 50, "#3c8cff"], [105, 150, "#e6281e"]]},
+    {"tipo": "luz", "canal": "tensao", "centro": [650, 292], "raio": 12, "rotulo": "BAT",
+     "zonas": [[0, 12.2, "#ffaa00"]]},
+    {"tipo": "luz", "canal": "velocidade", "centro": [730, 292], "raio": 12, "rotulo": "PARADO",
+     "zonas": [[0, 0.5, "#28dc3c"]]},
+    {"tipo": "historico", "canal": "velocidade", "faixa": [0, 140], "ret": [460, 340, 320, 122],
+     "segundos": 60, "zonas": [[110, 140, "#ffaa00"]]}
+  ]
+}

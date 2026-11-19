@@ -201,7 +201,7 @@ zonas de alerta.
 
 **Aceite:** tela de teste com um widget de cada tipo, alimentada pela `FonteSimulada`, a ≥ 30 fps no Eee PC.
 
-### [ ] F2.5 Formato de tema
+### [x] F2.5 Formato de tema
 **Fazer:** `painel/tema.py`: carrega `temas/<nome>/tema.json` (lista de widgets com tipo, canal,
 posição, faixa, sprites e cores) + PNGs; fundo composto e pré-renderizado na carga; validação do JSON
 com mensagens de erro claras.

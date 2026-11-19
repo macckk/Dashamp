@@ -48,7 +48,11 @@ class Ponteiro(Widget):
                  passo_maior: float | None = None, divisor: float = 1.0, menores: int = 4,
                  rotulo: str = "", cor_ponteiro: Cor = (220, 20, 20),
                  cor_face: Cor = (236, 228, 205), cor_traco: Cor = (30, 30, 30),
-                 cor_aro: Cor = (90, 90, 90), fonte_numeros: str | None = None) -> None:
+                 cor_aro: Cor = (90, 90, 90), fonte_numeros: str | None = None,
+                 sprite: pygame.Surface | None = None, escala: bool = True,
+                 cubo: bool = True) -> None:
+        """`sprite`: imagem do ponteiro com o pivô no centro, apontando para a direita (0°);
+        sem ela, o ponteiro é desenhado. `escala=False` deixa a face por conta do tema (fundo)."""
         super().__init__(canal, minimo, maximo, tau, zonas)
         self.centro, self.raio = centro, raio
         self.angulo_zero, self.varredura = angulo_zero, varredura
@@ -60,8 +64,10 @@ class Ponteiro(Widget):
         self.ret = pygame.Rect(0, 0, 2 * raio, 2 * raio)
         self.ret.center = centro
         comprimento = int(raio * 0.86)
-        self.cache = CacheAngulos(self._sprite(comprimento, cor_ponteiro))
-        self.cubo = self._cubo(max(8, raio // 12))
+        self.cache = CacheAngulos(sprite if sprite is not None
+                                  else self._sprite(comprimento, cor_ponteiro))
+        self.cubo = self._cubo(max(8, raio // 12)) if cubo else None
+        self.escala = escala
         self._ret_anterior = pygame.Rect(centro, (0, 0))
 
     def angulo(self, valor: float | None = None) -> float:
@@ -88,6 +94,8 @@ class Ponteiro(Widget):
         return s
 
     def pintar_fundo(self, fundo: pygame.Surface) -> None:
+        if not self.escala:
+            return
         e = 2                                  # desenha em 2× e reduz
         lado = 2 * self.raio * e
         c = lado / 2
@@ -134,7 +142,7 @@ class Ponteiro(Widget):
         img, dx, dy = self.cache.obter(self.angulo())
         cx, cy = self.centro
         ret = tela.blit(img, (cx + dx, cy + dy))
-        cubo = tela.blit(self.cubo, self.cubo.get_rect(center=self.centro))
-        ret.union_ip(cubo)
+        if self.cubo is not None:
+            ret.union_ip(tela.blit(self.cubo, self.cubo.get_rect(center=self.centro)))
         self._ret_anterior = ret
         return [sujo.union(ret)]
