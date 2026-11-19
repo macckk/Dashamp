@@ -1,9 +1,10 @@
 """App do painel (F2.5, F2.6): carrega um tema e o alimenta com uma fonte.
 
     python -m painel.main [--tema vintage] [--replay viagem.db --velocidade 2] [--metricas]
-                          [--ciclo-temas S]
+                          [--ciclo-temas S] [--udp [--porta 20777] [--gravar-udp ARQ]]
 
-Fonte padrão: a simulada. **T** passa para o próximo tema (sem reiniciar); Esc/Q sai.
+Fonte padrão: a simulada; `--udp` escuta a telemetria do F1 24 (e `--gravar-udp` guarda os
+pacotes brutos para testes). **T** passa para o próximo tema (sem reiniciar); Esc/Q sai.
 Um tema inválido na abertura termina com a lista de erros; na troca, os erros são impressos e o
 tema atual continua.
 """
@@ -29,6 +30,9 @@ def main(argv: Sequence[str] | None = None) -> None:
                    help="troca de tema sozinho a cada S segundos (para medir)")
     p.add_argument("--replay", help="viagem .db em vez da simulação")
     p.add_argument("--velocidade", type=float, default=1.0)
+    p.add_argument("--udp", action="store_true", help="telemetria do F1 24 pela rede")
+    p.add_argument("--porta", type=int, default=20777)
+    p.add_argument("--gravar-udp", metavar="ARQ", help="com --udp: grava os pacotes brutos")
     args = p.parse_args(argv)
     app = App(args, "Dashamp - painel")
     try:
@@ -39,7 +43,13 @@ def main(argv: Sequence[str] | None = None) -> None:
         raise SystemExit(2) from None
     print(f"tema '{tema.nome}' carregado em {tema.segundos_carga * 1000:.0f} ms "
           f"({len(tema.painel.widgets)} widgets)", flush=True)
-    fonte = criar_fonte(args.replay, args.velocidade)
+    if args.udp:
+        from painel.fontes.udp_f1 import FonteUDPF1
+
+        fonte = FonteUDPF1(args.porta, gravar_em=args.gravar_udp)
+        print(f"escutando a telemetria do F1 24 na porta UDP {args.porta}", flush=True)
+    else:
+        fonte = criar_fonte(args.replay, args.velocidade)
     estado = {"tema": tema, "ciclo": 0.0}
 
     def trocar() -> None:
@@ -75,6 +85,8 @@ def main(argv: Sequence[str] | None = None) -> None:
         fonte.parar()
         if fonte.erro:
             print(f"erro na fonte: {fonte.erro!r}", flush=True)
+        if hasattr(fonte, "contagem"):
+            print(f"pacotes UDP: {dict(fonte.contagem)}", flush=True)
 
 
 if __name__ == "__main__":

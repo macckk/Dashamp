@@ -218,7 +218,7 @@ Tecla para alternar entre temas sem reiniciar.
 
 **Aceite:** capturas dos três temas no Eee PC; ≥ 30 fps em todos.
 
-### [ ] F2.7 `FonteUDP` (F1)
+### [x] F2.7 `FonteUDP` (F1)
 **Fazer:** `painel/fontes/udp_f1.py`: escuta UDP na porta 20777 e decodifica o pacote de telemetria do
 carro (rpm, velocidade, marcha, acelerador, temperatura do motor). O formato muda a cada edição do jogo:
 perguntar ao mantenedor qual edição ele tem e usar a especificação oficial dela. Incluir um gravador de

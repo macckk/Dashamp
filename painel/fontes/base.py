@@ -48,7 +48,8 @@ def _c(nome: str, unidade: str, minimo: float, maximo: float, descricao: str) ->
 CANAIS: Mapping[str, Canal] = MappingProxyType({c.nome: c for c in (
     _c("rpm", "rpm", 0, 9000, "rotação do motor (01 0C)"),
     _c("velocidade", "km/h", 0, 260, "velocidade do veículo (01 0D)"),
-    _c("marcha", "", 0, 6, "marcha engatada; 0 = neutro (estimada pela razão rpm/velocidade)"),
+    _c("marcha", "", -1, 8, "marcha engatada; 0 = neutro, -1 = ré (OBD: estimada pela razão "
+       "rpm/velocidade; F1: até 8)"),
     _c("temp_motor", "°C", -40, 150, "temperatura do líquido de arrefecimento (01 05)"),
     _c("temp_ar", "°C", -40, 100, "temperatura do ar de admissão (01 0F)"),
     _c("acelerador", "%", 0, 100, "posição do acelerador (01 11)"),

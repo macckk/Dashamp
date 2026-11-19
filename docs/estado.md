@@ -1,8 +1,34 @@
 # Estado do Dashamp
 
-Última tarefa concluída: **F2.6** (três temas).
-Próxima: **F2.7** — `FonteUDP` (telemetria do F1); precisa saber qual edição do jogo o
-mantenedor tem.
+Última tarefa concluída: **F2.7** (`FonteUDPF1`, F1 24).
+Próxima: **F2.8** `[HUMANO]` — corrida de teste com o jogo enviando telemetria ao Eee PC.
+
+## FonteUDPF1 (F2.7)
+
+- Edição do jogo do mantenedor: **F1 24**. O fórum da EA com a especificação oficial recusou
+  acesso automático (HTTP 403); o layout foi conferido com um cliente de terceiros para o F1 24
+  e bate com os tamanhos de pacote da especificação: cabeçalho de 29 bytes, Car Telemetry (id 6)
+  1352 bytes = 29 + 22 × 60 + 3, Car Status (id 7) 1239 bytes = 29 + 22 × 55; little-endian,
+  sem preenchimento; porta 20777. **A confirmação final é a corrida da F2.8** (o decodificador
+  conta pacotes ignorados por formato/tamanho; se o layout estiver errado, aparece ali).
+- `painel/fontes/udp_f1.py`: `decodificar(pacote)` só aceita `m_packetFormat == 2024` e o tamanho
+  exato; usa o carro `m_playerCarIndex`. Canais: velocidade, acelerador (×100), marcha (-1 = R,
+  0 = N, até 8), rpm, temp_motor (telemetria) e combustivel_nivel (tanque ÷ capacidade, do
+  status). `FonteUDPF1(porta, gravar_em=)` publica uma leitura por pacote de telemetria e conta
+  os pacotes por tipo (`contagem`); SO_RCVBUF pedido de 1 MB (o kernel limita a 180 kB).
+- Gravador de pacotes brutos (`GravadorPacotes`, `ler_pacotes`; arquivo `DASHUDP1` + registros
+  `<d t><H tam><bytes>`), `--gravar` e `--enviar ARQ --destino IP` (reproduz pela rede no ritmo
+  gravado). `painel.main --udp [--gravar-udp ARQ]`.
+- O catálogo de canais passou `marcha` para -1..8 (ré e as 8 marchas do F1).
+- **Aceite**: os testes montam pacotes no layout do F1 24 (com valores diferentes nos outros 21
+  carros, para pegar deslocamento errado), gravam, releem e decodificam os valores certos; um
+  teste recebe pela rede local. No Eee PC, corrida sintética de 30 s a 60 Hz enviada pelo PC:
+  **1800/1800 pacotes de telemetria e 60/60 de status**, painel a 30,0 fps, CPU 30–48% (tema
+  moderno). Uma primeira tentativa "perdeu" 136 pacotes porque o app encerrou (--duracao) antes
+  do fim do envio; o gravador sozinho e o kernel (`RcvbufErrors` 0) não perderam nada.
+- Observação para a F2.8: os temas têm escala de carro de rua (8000 rpm, 220–260 km/h); no F1
+  (até ~13000 rpm, > 300 km/h) os mostradores ficam no máximo. Ajustar se o mantenedor quiser
+  (variantes de tema com outra faixa).
 
 ## Três temas (F2.6)
 
