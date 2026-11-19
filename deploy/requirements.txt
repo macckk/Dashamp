@@ -6,5 +6,14 @@
 #     que o Celeron M não tem (instrução ilegal ao abrir a janela no X). Ver docs/estado.md, F0.7.
 #   - PyGObject e GStreamer (python3-gi, gir1.2-gstreamer-1.0).
 #   - pycryptodome (python3-pycryptodome; módulo "Cryptodome"): Salsa20 da telemetria do GT7.
+#   - pyserial (python3-serial) e PyYAML (python3-yaml): porta do ELM327 e cenários do emulador.
 #
-# Por enquanto não há dependências pip.
+# Pelo pip (todos Python puro; ver docs/estado.md, F3.1):
+#   - obd: leitura do carro pelo ELM327 (F3.1). Exige Pint 0.24, mais novo que o do Debian (0.19);
+#     o pip traz o Pint e as dependências dele (flexcache, flexparser, platformdirs,
+#     typing_extensions).
+#   - ELM327-emulator: só para testes (carro falso numa porta serial virtual). Não há wheel da 4.0.0;
+#     o sdist é Python puro e instala rápido.
+obd==0.7.3
+pint==0.24.*
+ELM327-emulator==4.0.0

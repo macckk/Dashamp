@@ -2,13 +2,14 @@
 
     python -m painel.main [--tema vintage] [--replay viagem.db --velocidade 2] [--metricas]
                           [--ciclo-temas S] [--udp [--porta 20777]] [--gt7 [--ps5 IP]]
-                          [--gravar-udp ARQ]
+                          [--gravar-udp ARQ] [--obd [PORTA] [--obd-baud 38400]]
 
 No Eee PC: F1 = player, F2 = painel recebendo o GT7, F3 = painel com a simulação (core.app).
 Enquanto não chega telemetria, uma caixa na tela diz o que falta (com o IP deste aparelho).
 
 Fonte padrão: a simulada; `--udp` escuta a telemetria do F1 24; `--gt7` pede a do Gran Turismo 7
-ao PS5 (procura o console na rede, ou `--ps5 IP`). `--gravar-udp` guarda os pacotes brutos. **T** passa para o próximo tema (sem reiniciar); Esc/Q sai.
+ao PS5 (procura o console na rede, ou `--ps5 IP`); `--obd` lê o carro por um ELM327 (sem porta:
+procura; ou /dev/ttyUSB0, /dev/rfcomm0, socket://host:porta do emulador). `--gravar-udp` guarda os pacotes brutos. **T** passa para o próximo tema (sem reiniciar); Esc/Q sai.
 Um tema inválido na abertura termina com a lista de erros; na troca, os erros são impressos e o
 tema atual continua.
 """
@@ -85,6 +86,9 @@ def main(argv: Sequence[str] | None = None) -> None:
     p.add_argument("--gt7", action="store_true", help="telemetria do Gran Turismo 7 (PS5)")
     p.add_argument("--ps5", help="com --gt7: IP do PS5 (sem isto, procura na rede)")
     p.add_argument("--gravar-udp", metavar="ARQ", help="com --udp/--gt7: grava os pacotes brutos")
+    p.add_argument("--obd", nargs="?", const="auto", metavar="PORTA",
+                   help="carro pelo adaptador ELM327 (sem PORTA: procura)")
+    p.add_argument("--obd-baud", type=int, help="com --obd: velocidade da serial (padrão: detectar)")
     args = p.parse_args(argv)
     app = App(args, "Dashamp - painel")
     try:
@@ -114,6 +118,21 @@ def main(argv: Sequence[str] | None = None) -> None:
                     f"IP deste aparelho: {ip}")
 
         aviso = AvisoEspera(linhas_gt7)
+    elif args.obd:
+        from painel.fontes.obd import FonteOBD
+
+        porta = None if args.obd == "auto" else args.obd
+        fonte = FonteOBD(porta, args.obd_baud)
+        print(f"OBD: {porta or 'procurando o adaptador'}", flush=True)
+        textos_obd = {
+            "sem_carro": ("Adaptador OBD encontrado", "Ligue a ignição do carro",
+                          "(o adaptador responde, o carro ainda não)"),
+            "sem_adaptador": ("Adaptador OBD não encontrado", f"Porta: {porta or 'procurando'}",
+                              "Confira o ELM327 na tomada OBD e no USB"),
+        }
+        aviso = AvisoEspera(lambda _ip: textos_obd.get(fonte.situacao, (
+            "Conectando ao carro (OBD-II)", f"Porta: {porta or 'procurando'}",
+            "Pode levar alguns segundos")))
     elif args.udp:
         from painel.fontes.udp_f1 import FonteUDPF1
 
@@ -172,7 +191,9 @@ def main(argv: Sequence[str] | None = None) -> None:
         if fonte.erro:
             print(f"erro na fonte: {fonte.erro!r}", flush=True)
         if hasattr(fonte, "contagem"):
-            print(f"pacotes UDP: {dict(fonte.contagem)}", flush=True)
+            print(f"contagem: {dict(fonte.contagem)}", flush=True)
+        if hasattr(fonte, "taxa_rpm"):
+            print(f"rpm lidos por segundo: {fonte.taxa_rpm:.1f}", flush=True)
 
 
 if __name__ == "__main__":

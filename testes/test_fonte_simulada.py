@@ -8,6 +8,9 @@ import pytest
 from painel.fontes.base import CANAIS, canais_desconhecidos
 from painel.fontes.simulada import KMH_POR_1000, FonteSimulada, simular
 
+# Canais que só o OBD tem (a simulação não os produz).
+SO_OBD = {"maf", "trim_curto", "trim_longo", "sonda_o2"}
+
 
 @pytest.fixture(scope="module")
 def viagem() -> list[tuple[float, dict[str, float]]]:
@@ -20,7 +23,7 @@ def _serie(viagem, canal: str) -> list[float]:
 
 def test_canais_do_catalogo_e_dentro_da_faixa(viagem) -> None:
     for _, v in viagem:
-        assert not canais_desconhecidos(v) and set(v) == set(CANAIS)
+        assert not canais_desconhecidos(v) and set(v) == set(CANAIS) - SO_OBD
         for n, x in v.items():
             assert CANAIS[n].minimo <= x <= CANAIS[n].maximo, n
 
@@ -74,4 +77,4 @@ def test_fonte_em_tempo_real() -> None:
         time.sleep(1.0)
     assert f.erro is None and 17 <= f.leituras <= 23
     u = f.ultima()
-    assert u is not None and 0.8 < u.t < 1.2 and set(u.valores) == set(CANAIS)
+    assert u is not None and 0.8 < u.t < 1.2 and set(u.valores) == set(CANAIS) - SO_OBD

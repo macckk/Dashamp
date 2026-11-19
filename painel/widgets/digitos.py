@@ -3,6 +3,11 @@
 Os "8" apagados ficam no fundo (o fantasma dos segmentos, como num LED de verdade); os glifos
 acesos são pré-renderizados por cor (normal e a de cada zona) em 3× e reduzidos com smoothscale.
 Caracteres: 0-9, '-', ' ' e o ponto decimal (desenhado entre os dígitos).
+
+Desempenho: no Eee PC um glifo com alfa de 150 px leva ~4 ms para ser desenhado e um opaco
+~0,1 ms. Quando o widget está sozinho na sua área (`sozinho`, posto pelo Painel), cada
+(posição, caractere, cor) vira uma imagem **opaca** já combinada com o fundo, feita na primeira
+vez que aparece: a repintura do velocímetro caiu de ~13 ms para <1 ms (F3.1).
 """
 from __future__ import annotations
 
@@ -49,6 +54,7 @@ class Digitos(Widget):
         self.ret = pygame.Rect(pos, (self.passo * digitos, altura))
         self._glifos: dict[tuple[str, Cor], pygame.Surface] = {}
         self._ponto: dict[Cor, pygame.Surface] = {}
+        self._compostos: dict[tuple[int, str, Cor], pygame.Surface] = {}
 
     def _glifo(self, c: str, cor: Cor) -> pygame.Surface:
         chave = (c, cor)
@@ -66,6 +72,19 @@ class Digitos(Widget):
                 g = g.convert_alpha()
             self._glifos[chave] = g
         return g
+
+    def _composto(self, i: int, c: str, cor: Cor, fundo: pygame.Surface) -> pygame.Surface:
+        """Célula `i` com o caractere já desenhado sobre o fundo (opaca)."""
+        chave = (i, c, cor)
+        s = self._compostos.get(chave)
+        if s is None:
+            g = self._glifo(c, cor)
+            celula = pygame.Rect(self.ret.x + i * self.passo, self.ret.y,
+                                 g.get_width(), g.get_height()).clip(fundo.get_rect())
+            s = fundo.subsurface(celula).copy()
+            s.blit(g, (0, 0))
+            self._compostos[chave] = s
+        return s
 
     def _ponto_decimal(self, cor: Cor) -> pygame.Surface:
         if cor not in self._ponto:
@@ -99,8 +118,13 @@ class Digitos(Widget):
         restaurar(tela, fundo, self.ret)
         cor = self._cor()
         for i, c in enumerate(self.texto()):
-            if c != " ":
-                tela.blit(self._glifo(c, cor), (self.ret.x + i * self.passo, self.ret.y))
+            if c == " ":
+                continue
+            pos = (self.ret.x + i * self.passo, self.ret.y)
+            if self.sozinho:
+                tela.blit(self._composto(i, c, cor, fundo), pos)
+            else:
+                tela.blit(self._glifo(c, cor), pos)
         if self.casas and self.valor is not None:
             p = self._ponto_decimal(cor)
             x = self.ret.x + (self.n - self.casas) * self.passo - p.get_width() - 1

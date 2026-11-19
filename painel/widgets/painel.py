@@ -48,6 +48,9 @@ class Painel:
         if pygame.display.get_surface() is not None:
             self.fundo = self.fundo.convert()
         self.grupos = _grupos(self.widgets)
+        for g in self.grupos:                # widget sozinho pode pintar por cima do fundo
+            for w in g:
+                w.sozinho = len(g) == 1
         self._uniao = [g[0].ret.unionall([w.ret for w in g[1:]]) for g in self.grupos]
         self._primeiro = True
 

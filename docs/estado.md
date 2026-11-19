@@ -1,7 +1,50 @@
 # Estado do Dashamp
 
-Última tarefa concluída: **F2.8** (corrida de teste com o GT7 no PS5).
-Próxima: **F3.1** — `FonteOBD` contra o emulador.
+Última tarefa concluída: **F3.1** (`FonteOBD` contra o emulador).
+Próxima: **F3.2** — consumo e códigos de erro.
+
+## FonteOBD (F3.1)
+
+- `painel/fontes/obd.py`: `FonteOBD(porta, baudrate)` com o python-OBD 0.7.3; `painel.main --obd
+  [PORTA] [--obd-baud N]` (sem porta: o python-OBD procura). Caixa de espera com o que falta
+  ("adaptador não encontrado", "ligue a ignição", "conectando").
+- **Agendador**: `rpm` e `velocidade` em todo ciclo; acelerador 0,25 s; carga, pressão do coletor
+  e MAF 0,5 s; temperaturas, tensão, tanque, sonda e trims 1 s. Em cada ciclo vai **um** lento (o
+  mais atrasado). Teto de 15 ciclos/s (`CICLOS_MAX_HZ`). Canais sem PID suportado saem da agenda;
+  a tensão cai para `ELM_VOLTAGE` (AT RV do adaptador).
+- **Decisão: sem `obd.Async`**: ele lê os comandos observados em fila, sem prioridade. A thread
+  da `Fonte` faz o papel de laço assíncrono e o agendador fica nela, com `OBD.query`.
+- **Reconexão**: sem adaptador, sem ignição ou 5 ciclos seguidos sem rpm/velocidade → publica
+  `REPOUSO`, fecha e tenta de novo a cada 3 s.
+- Canais novos no catálogo: `maf` (g/s), `trim_curto`, `trim_longo` (%), `sonda_o2` (V).
+- **Dependências** (justificativa): `obd` (a biblioteca indicada no plano) exige Pint 0.24.x; o
+  Debian 12 tem 0.19, então o Pint vem do pip, com flexcache, flexparser, platformdirs e
+  typing_extensions (Python puro). pyserial e PyYAML vêm do apt (python3-serial, python3-yaml).
+  ELM327-emulator 4.0.0 (só testes; sdist Python puro). Ao todo poucos MB no venv.
+- `import obd` leva **4,1 s** no Eee PC (o Pint monta o registro de unidades): o import fica dentro
+  da thread da fonte e o painel abre na hora.
+- **Emulador**: no Windows o modo de rede (`elm -n`) não conversa com o python-OBD (só responde
+  `` inválido, e o modo lote grava o log sem parar: 150 MB em 3 min). No Eee PC funciona
+  pela rede e pela pty. Os testes no PC usam um adaptador falso (`testes/test_obd.py`); o teste com
+  o emulador de verdade (parar e subir de novo) roda só no Linux.
+- Pela rede (`socket://`) o pyserial faz ~22 leituras com `select` por resposta: **13 ms de CPU por
+  pergunta** no Eee PC. Pela pty (o caminho de uma serial USB/Bluetooth de verdade): **1,4 ms**.
+  O aceite foi pela pty, com um link fixo `/tmp/elm_porta` (como uma `/dev/rfcomm0`) refeito
+  quando o emulador sobe de novo.
+- **Aceite no Eee PC** (emulador na mesma máquina, ~25% da CPU dele): valores na tela
+  (`docs/img/f31_obd.png`); emulador parado por 10 s → "Device disconnected", 3 tentativas de
+  reconexão, ponteiros em repouso; emulador de volta → leitura retomada sozinha
+  (`reconexao: 1`). **Taxa efetiva de rpm: 15,0 leituras/s** (o teto; sem teto, 38/s, com
+  60% de CPU). Só a fonte: 8% de CPU. Num carro de verdade o ELM327 deve dar menos (≈ 5–10 rpm/s
+  com os lentos intercalados); medir na F3.3.
+- Painel + OBD (30 s cada): digital80 30 fps, CPU 16%, RSS 56 MB; vintage 28–30 fps, CPU 47–51%,
+  62 MB; moderno 29–30 fps, CPU 41%, 55 MB. Os valores do emulador pulam (rpm 0 ↔ 1300, velocidade
+  29 ↔ 114) e mexem todos os ponteiros a cada quadro, bem mais do que um carro.
+- **Otimização em `Digitos`** (achada aqui): glifo com alfa de 150 px = 4 ms por blit no Eee PC,
+  opaco = 0,11 ms. Widget sozinho na área (`Widget.sozinho`, posto pelo Painel) usa imagens
+  opacas por (posição, caractere, cor), já combinadas com o fundo: digital80 com OBD caiu de 37%
+  para 16% de CPU. No vintage o custo é dos ponteiros (sprite girado com alfa, ~1,3 ms cada).
+- Testes: 127 + 5 pulados no PC; 132 no Eee PC (inclui o emulador).
 
 ## Corrida de teste (F2.8)
 

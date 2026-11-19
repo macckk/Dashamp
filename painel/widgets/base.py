@@ -44,6 +44,9 @@ class Widget:
         self.valor: float | None = None      # valor mostrado (suavizado)
         self.ret = pygame.Rect(0, 0, 0, 0)   # área ocupada na tela
         self._ultima_chave: object = object()
+        # O Painel põe False quando o widget divide área com outro (aí não pode pintar retângulos
+        # opacos, que apagariam o vizinho).
+        self.sozinho = False
 
     # --- valor ----------------------------------------------------------------------
 

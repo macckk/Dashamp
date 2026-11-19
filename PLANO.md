@@ -244,7 +244,7 @@ O mantenedor liga o GT7 no PS5, na mesma rede do Eee PC, e faz uma corrida.
 
 ## Fase 3 — Carputer
 
-### [ ] F3.1 `FonteOBD` contra o emulador
+### [x] F3.1 `FonteOBD` contra o emulador
 **Fazer:** `painel/fontes/obd.py` com `python-OBD` assíncrono. Agendador por prioridade: `rpm` e
 `velocidade` a cada ciclo; `temp_motor`, `temp_ar`, `tensao`, sondas e trims a 1 Hz. Na conexão,
 descobrir os PIDs suportados e desativar o resto. Reconexão automática. Testar com o **ELM327-emulator**

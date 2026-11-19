@@ -204,3 +204,23 @@ def test_numero_tabular_e_zona(tela) -> None:
     assert n.desenhar(tela, fundo) and _tem_cor(tela, n.ret, VERMELHO)
     with pytest.raises(ValueError):
         Numero("x", (0, 0), 10, 0, 1, alinhar="meio")
+
+
+def test_digitos_opacos_iguais_aos_com_alfa(tela) -> None:
+    """O atalho opaco (widget sozinho) desenha os mesmos pixels que os glifos com alfa."""
+    def desenhar(sozinho: bool) -> pygame.Surface:
+        d = Digitos("velocidade", (100, 100), 3, 120, 0, 260, tau=0,
+                    zonas=[Zona(200, 260, (255, 0, 0))])
+        p = Painel((800, 480), [d], cor_fundo=(20, 30, 40))
+        d.sozinho = sozinho
+        p.desenhar(tela)
+        for v in (87, 205, 7):
+            d.atualizar(v, 0.1)
+            p.desenhar(tela)
+        assert d.sozinho is sozinho and (bool(d._compostos) is sozinho)
+        return tela.copy()
+
+    assert Painel((800, 480), [Digitos("rpm", (0, 0), 2, 20, 0, 1)]).widgets[0].sozinho
+    a, b = desenhar(True), desenhar(False)
+    assert all(a.get_at((x, y)) == b.get_at((x, y))
+               for x in range(100, 400, 3) for y in range(100, 220, 3))

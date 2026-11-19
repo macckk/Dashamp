@@ -58,6 +58,10 @@ CANAIS: Mapping[str, Canal] = MappingProxyType({c.nome: c for c in (
     _c("tensao", "V", 0, 18, "tensão da bateria / módulo de controle (01 42)"),
     _c("combustivel_lh", "L/h", 0, 40, "consumo instantâneo de combustível"),
     _c("combustivel_nivel", "%", 0, 100, "nível do tanque (01 2F)"),
+    _c("maf", "g/s", 0, 655, "fluxo de ar da admissão (01 10); base do consumo da F3.2"),
+    _c("trim_curto", "%", -100, 100, "correção de combustível de curto prazo, banco 1 (01 06)"),
+    _c("trim_longo", "%", -100, 100, "correção de combustível de longo prazo, banco 1 (01 07)"),
+    _c("sonda_o2", "V", 0, 1.275, "tensão da primeira sonda lambda suportada (01 14 / 01 15)"),
 )})
 
 

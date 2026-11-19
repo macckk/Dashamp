@@ -4,3 +4,5 @@
 pygame-ce==2.5.8
 pytest
 pycryptodome   # Salsa20 do GT7; no Eee PC vem do apt (python3-pycryptodome)
+obd==0.7.3            # leitura do carro (F3.1); traz pint 0.24 e pyserial
+ELM327-emulator==4.0.0   # testes: no Windows o modo de rede não conversa com o python-OBD
