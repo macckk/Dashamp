@@ -193,7 +193,7 @@ mesmo que o carputer vai gravar. `FonteReplay` toca o arquivo no tempo real, com
 
 **Aceite:** gravar 60 s da `FonteSimulada` e reproduzir; os valores batem com os originais.
 
-### [ ] F2.4 Widgets
+### [x] F2.4 Widgets
 **Fazer:** em `painel/widgets/`: `Ponteiro` (sprite rotacionado, com cache de ângulos se a F0.8 indicar),
 `Barra` (bargraph segmentado), `Digitos` (7 segmentos/fonte bitmap), `LuzEspia` e `Historico` (linha
 dos últimos N segundos). Interpolação no widget (aproximação exponencial ao alvo a cada quadro) e

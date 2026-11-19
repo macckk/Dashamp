@@ -1,7 +1,33 @@
 # Estado do Dashamp
 
-Última tarefa concluída: **F2.3** (formato de gravação e `FonteReplay`).
-Próxima: **F2.4** — widgets.
+Última tarefa concluída: **F2.4** (widgets).
+Próxima: **F2.5** — formato de tema (`tema.json`).
+
+## Widgets (F2.4)
+
+- `painel/widgets/`: base `Widget` (canal, faixa, `tau` da suavização exponencial, `Zona(de, ate,
+  cor)` de alerta) com o ciclo `pintar_fundo` (parte estática no fundo, uma vez) → `atualizar`
+  (aproxima o valor mostrado do lido: `v += (alvo - v)(1 - e^(-dt/tau))`) → `desenhar` (só se a
+  `_chave()` quantizada mudou; restaura o fundo e devolve os retângulos sujos).
+  - `Ponteiro`: escala (traços, números, arco das zonas, rótulo) desenhada em 2× e reduzida com
+    smoothscale. **Cache de ângulos sob demanda** (passo de 1°, só dentro da varredura): a F0.8
+    pré-gerava 360 ângulos em 2,9 s e 18 MB, o que não cabe nos < 1 s de carga de tema da F2.5;
+    agora cada ângulo é girado na primeira vez que aparece (no máximo um por quadro).
+  - `Barra`: segmentos apagados no fundo, acesos (cor da zona do meio de cada segmento)
+    pré-renderizados; horizontal ou vertical (enche de baixo para cima). Dois blits por mudança.
+  - `Digitos`: 7 segmentos desenhados por código (hexágonos, itálico leve) em 3× com
+    smoothscale; "8" fantasma no fundo; glifos em cache por cor; ponto decimal; "---" sem dado
+    ou se não couber.
+  - `LuzEspia`: acende na cor da zona em que o valor está, com halo; pode piscar.
+  - `Historico`: deque de N s × taxa (4/s), redesenha a linha só a cada amostra nova; grade a
+    cada 10 s e linhas das zonas no fundo.
+  - `Painel`: fundo pré-renderizado + widgets + fonte. Widgets sobrepostos formam um grupo
+    (componentes conexos): se um muda, o grupo inteiro é restaurado e redesenhado na ordem.
+- `python -m painel.teste_widgets [--replay viagem.db --velocidade 2]`: conta-giros com a marcha
+  dentro, velocidade em LED, barras de temperatura e acelerador, 4 luzes e histórico de 60 s.
+- **Aceite no Eee PC** (60 s com a FonteSimulada): **30,0 fps** (29,7 num intervalo com o cache
+  do ponteiro enchendo; 29,1 no da captura), CPU do processo 7–13% (picos de 22–32% enquanto
+  ângulos novos são girados), RSS 50–55 MB. Captura em `docs/img/f24_widgets.png`. 8 testes novos.
 
 ## Gravação de viagens e FonteReplay (F2.3)
 
