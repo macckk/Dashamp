@@ -182,7 +182,7 @@ Catálogo de canais com unidade e faixa (`rpm`, `velocidade`, `marcha`, `temp_mo
 
 **Aceite:** testes da interface passam.
 
-### [ ] F2.2 `FonteSimulada`
+### [x] F2.2 `FonteSimulada`
 **Fazer:** simulação de motor simples (marcha lenta, aceleração, troca de marcha, aquecimento) a 8 Hz.
 
 **Aceite:** gravação de 60 s produz curvas plausíveis (verificar com um gráfico gerado no PC).

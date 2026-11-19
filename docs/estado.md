@@ -1,7 +1,27 @@
 # Estado do Dashamp
 
-Última tarefa concluída: **F2.1** (interface `Fonte`).
-Próxima: **F2.2** — `FonteSimulada`.
+Última tarefa concluída: **F2.2** (`FonteSimulada`).
+Próxima: **F2.3** — formato de gravação (SQLite) e `FonteReplay`.
+
+## FonteSimulada (F2.2)
+
+- `painel/fontes/simulada.py`: `Carro` (estado + `passo(dt)` + `valores()`), `simular(segundos)`
+  determinística (para testes e gráficos) e `FonteSimulada(hz=8, semente=1, temp_inicial=25)`, que
+  avança o carro pelo dt real entre amostras (se a máquina atrasar, o carro não anda mais devagar
+  que o relógio).
+- Modelo: motorista em fases (parado 3–8 s → acelera com pedal 45–95% até 40–120 km/h → mantém
+  com controle proporcional → desacelera até parar ou até um alvo ≥ 15 km/h menor); câmbio de
+  5 marchas (8/14/21/28/35 km/h a 1000 rpm), sobe em 2500–4500 rpm conforme o pedal, reduz abaixo
+  de 1300, corte de 0,4 s em cada troca; embreagem patinando até 10 km/h; marcha lenta
+  1150 rpm fria → 820 quente; motor aquece com a potência até a válvula (~90 °C em ~8 min
+  partindo de 25 °C); ar de admissão esquenta parado; consumo ∝ rpm × carga; tanque de 50 L.
+  Todos os 11 canais do catálogo, limitados às faixas dele.
+- `python -m painel.fontes.simulada --segundos 60 --csv /tmp/simulada.csv` grava em tempo real
+  pela thread. `scripts/grafico_csv.py` desenha o CSV num PNG com o pygame (sem matplotlib).
+- **Aceite no Eee PC**: 60 s → **480 leituras = 8,00 Hz**, CPU do processo **1,8%**. Gráfico
+  conferido (`docs/img/f22_simulada_60s.png`): duas arrancadas até ~55 e ~83 km/h com 1ª→4ª/5ª,
+  quedas de rotação nas trocas, reduções até parar, aquecimento contínuo, consumo de 1,3 L/h
+  parado a ~13 L/h acelerando forte. 7 testes novos (58 no total no Eee PC).
 
 ## Interface Fonte (F2.1)
 
