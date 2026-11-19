@@ -87,3 +87,19 @@ def test_fonte_recebe_pela_rede_e_grava(tmp_path: Path) -> None:
     assert v["velocidade"] == 312 and v["marcha"] == 8 and v["combustivel_nivel"] == 50.0
     assert fonte.contagem == {"status": 1, "telemetria": 1, "curto": 1}
     assert len(list(u.ler_pacotes(str(arq)))) == 3       # grava também o que ignora
+
+
+def test_fim_da_sessao_zera_os_mostradores() -> None:
+    fonte = u.FonteUDPF1(porta=0, endereco="127.0.0.1")
+    with fonte:
+        envio = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        envio.sendto(u.montar_status(55, 110), ("127.0.0.1", fonte.porta))
+        envio.sendto(u.montar_telemetria(250, 0.9, 6, 10500, 101), ("127.0.0.1", fonte.porta))
+        envio.close()
+        fim = time.monotonic() + 4
+        while fonte.contagem["repouso"] < 1 and time.monotonic() < fim:
+            time.sleep(0.02)
+    v = fonte.ultima().valores
+    assert fonte.contagem["repouso"] == 1 and fonte.leituras == 2
+    assert (v["rpm"], v["velocidade"], v["marcha"], v["acelerador"]) == (0, 0, 0, 0)
+    assert v["temp_motor"] == 101 and v["combustivel_nivel"] == 50.0

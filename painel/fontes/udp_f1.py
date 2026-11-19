@@ -40,7 +40,7 @@ import time
 from collections import Counter
 from collections.abc import Iterator
 
-from painel.fontes.base import Fonte
+from painel.fontes.base import REPOUSO, SILENCIO_REPOUSO_S, Fonte
 
 PORTA = 20777
 FORMATO = 2024
@@ -190,8 +190,15 @@ class FonteUDPF1(Fonte):
         assert self._sock is not None
         gravador = GravadorPacotes(self.gravar_em) if self.gravar_em else None
         estado: dict[str, float] = {}
+        ultima_telemetria = 0.0
+        repouso = True
         try:
             while not self._parar.is_set():
+                if not repouso and time.monotonic() - ultima_telemetria > SILENCIO_REPOUSO_S:
+                    repouso = True                    # fim da sessão: o jogo para de mandar
+                    self.contagem["repouso"] += 1
+                    estado.update(REPOUSO)
+                    self._publicar(estado)
                 try:
                     dados = self._sock.recv(2048)
                 except socket.timeout:
@@ -203,6 +210,7 @@ class FonteUDPF1(Fonte):
                 if valores:
                     estado.update(valores)
                     if tipo == "telemetria":
+                        ultima_telemetria, repouso = time.monotonic(), False
                         self._publicar(estado)
         finally:
             if gravador is not None:

@@ -12,13 +12,18 @@ por vários painéis abertos) e é o que a corrida da F2.8 vai confirmar:
   o pacote começa com a assinatura 0x47375330 ("0S7G" em little-endian).
 - Campos usados (little-endian): 0x3C rpm (float), 0x44 combustível (float, litros),
   0x48 capacidade do tanque (float), 0x4C velocidade (float, m/s), 0x58 temperatura da água
-  (float, °C), 0x8E flags (uint16; bit 0 = carro na pista, bit 1 = pausado), 0x90 marcha
+  (float, °C), 0x8E flags (uint16; bit 0 = carro na pista, bit 1 = pausado, bit 2 = carregando),
+  0x90 marcha
   (uint8; nibble baixo = marcha atual, alto = sugerida), 0x91 acelerador (uint8, 0..255).
 
 **Descoberta do PS5** (para não precisar digitar IP no Eee PC): enquanto não chega nada, o
 heartbeat vai para o broadcast da rede e para cada endereço da sub-rede (/24, 254 pacotes de
 1 byte a cada 3 s); o primeiro que responder é o PS5, e daí em diante o heartbeat vai só para ele.
 Com `ps5="192.168.x.y"` a descoberta é pulada.
+
+**Fim da corrida**: pausa, tela de carregamento, carro fora da pista ou 1,5 s sem pacote do carro
+publicam `base.REPOUSO` (rpm, velocidade, marcha e acelerador em zero), uma vez a cada entrada
+nesse estado; sem isso os mostradores ficavam parados na última medição.
 
 O gravador de pacotes é o mesmo da fonte do F1 (`udp_f1.GravadorPacotes`, pacotes cifrados como
 chegaram).
@@ -41,7 +46,7 @@ try:  # Debian (python3-pycryptodome) usa o nome Cryptodome; o pip, Crypto
 except ImportError:  # pragma: no cover - depende da instalação
     from Crypto.Cipher import Salsa20
 
-from painel.fontes.base import Fonte
+from painel.fontes.base import REPOUSO, SILENCIO_REPOUSO_S, Fonte
 from painel.fontes.udp_f1 import GravadorPacotes
 
 PORTA_PS5, PORTA_LOCAL = 33739, 33740
@@ -53,7 +58,7 @@ HEARTBEAT = b"A"
 INTERVALO_HEARTBEAT_S = 1.0
 INTERVALO_DESCOBERTA_S = 3.0
 
-FLAG_NA_PISTA, FLAG_PAUSADO = 0x1, 0x2
+FLAG_NA_PISTA, FLAG_PAUSADO, FLAG_CARREGANDO = 0x1, 0x2, 0x4
 
 
 def _nonce(iv1: int) -> bytes:
@@ -79,6 +84,10 @@ def decodificar(dados: bytes) -> tuple[str, dict[str, float]]:
     flags = struct.unpack_from("<H", claro, 0x8E)[0]
     if flags & FLAG_PAUSADO:
         return "pausado", {}
+    if flags & FLAG_CARREGANDO:
+        return "carregando", {}
+    if not flags & FLAG_NA_PISTA:
+        return "fora_da_pista", {}
     rpm, = struct.unpack_from("<f", claro, 0x3C)
     tanque, capacidade, vel = struct.unpack_from("<fff", claro, 0x44)
     agua, = struct.unpack_from("<f", claro, 0x58)
@@ -185,13 +194,25 @@ class FonteGT7(Fonte):
         gravador = GravadorPacotes(self.gravar_em) if self.gravar_em else None
         prox = {"hb": 0.0, "desc": 0.0}
         estado: dict[str, float] = {}
-        ultimo_dado = 0.0
+        ultimo_dado = ultimo_carro = 0.0
+        repouso = True                     # nada publicado ainda: não há o que zerar
+
+        def repousar() -> None:
+            nonlocal repouso
+            if not repouso:
+                repouso = True
+                self.contagem["repouso"] += 1
+                estado.update(REPOUSO)
+                self._publicar(estado)
+
         try:
             while not self._parar.is_set():
                 agora = time.monotonic()
                 if self.ps5 is not None and ultimo_dado and agora - ultimo_dado > 10:
                     self.contagem["perdido"] += 1                 # console sumiu: procura de novo
                     self.ps5, ultimo_dado = None, 0.0
+                if not repouso and agora - ultimo_carro > SILENCIO_REPOUSO_S:
+                    repousar()                                    # parou de chegar: fim da prova
                 self._heartbeat(agora, prox)
                 try:
                     dados, (origem, _porta) = self._sock.recvfrom(2048)
@@ -203,14 +224,17 @@ class FonteGT7(Fonte):
                     gravador.gravar(dados)
                 tipo, valores = decodificar(dados)
                 self.contagem[tipo] += 1
-                if tipo in ("gt7", "pausado"):
+                if tipo in ("gt7", "pausado", "carregando", "fora_da_pista"):
                     if self.ps5 is None:                          # achou o console
                         self.ps5 = origem
                         prox["hb"] = 0.0
                     ultimo_dado = agora
                 if valores:
+                    ultimo_carro, repouso = agora, False
                     estado.update(valores)
                     self._publicar(estado)
+                elif tipo in ("pausado", "carregando", "fora_da_pista"):
+                    repousar()
         finally:
             if gravador is not None:
                 gravador.fechar()

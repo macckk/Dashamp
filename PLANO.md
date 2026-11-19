@@ -235,7 +235,7 @@ digitar IP); mesmo gravador de pacotes brutos; simulador de PS5 para testar sem 
 **Aceite:** um teste reproduz pacotes gravados e obtém valores corretos; no Eee PC, o painel acha um
 PS5 simulado na rede e acompanha os dados.
 
-### [ ] F2.8 `[HUMANO]` Corrida de teste
+### [x] F2.8 `[HUMANO]` Corrida de teste
 O mantenedor liga o GT7 no PS5, na mesma rede do Eee PC, e faz uma corrida.
 
 **Aceite:** o painel acompanha o jogo em tempo real nos três temas, sem atraso perceptível.

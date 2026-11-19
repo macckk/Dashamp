@@ -16,6 +16,9 @@ tela 800×480). Se roda bem nela, roda em praticamente qualquer coisa.
 
 **Status:** em desenvolvimento — veja o andamento em [`PLANO.md`](PLANO.md).
 
+**Jogos de console:** o painel já recebe a telemetria do Gran Turismo 7 (PS5) e do F1 24.
+Lista completa, com o que funciona e o que é possível: [`docs/jogos.md`](docs/jogos.md).
+
 ### Pilha
 
 Python 3.11 · pygame-ce (SDL2) · GStreamer · python-OBD · SQLite · FastAPI (servidor) · Debian 12
@@ -46,6 +49,9 @@ The reference machine is an **ASUS Eee PC 701** (900 MHz Celeron M, 32-bit, 512 
 800×480 screen). If it runs well there, it runs almost anywhere.
 
 **Status:** work in progress — see [`PLANO.md`](PLANO.md) (in Portuguese).
+
+**Console games:** the dashboard already reads Gran Turismo 7 (PS5) and F1 24 telemetry.
+Full list of what works and what is possible: [`docs/jogos.md`](docs/jogos.md#english).
 
 Dashamp does not ship third-party skins; fetch test skins with `scripts/baixar_skins.sh`.
 Winamp is a trademark of its respective owners; this project is not affiliated with them.

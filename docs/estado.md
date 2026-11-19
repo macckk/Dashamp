@@ -1,9 +1,27 @@
 # Estado do Dashamp
 
-Última tarefa concluída: **F2.7b** (`FonteGT7`, Gran Turismo 7 no PS5).
-**Pendente: F2.8** `[HUMANO]` — corrida de teste com o GT7 (o mantenedor vai fazer em casa).
-Decisão do mantenedor: seguir para a fase 3 enquanto isso.
+Última tarefa concluída: **F2.8** (corrida de teste com o GT7 no PS5).
 Próxima: **F3.1** — `FonteOBD` contra o emulador.
+
+## Corrida de teste (F2.8)
+
+- O mantenedor correu com o **Gran Turismo 7 num PS5** em casa, com o Eee PC na mesma rede (boot
+  em `painel --gt7`): o Eee PC achou o console sozinho e o painel acompanhou a corrida. Resultado
+  relatado: "ficou excelente". Protocolo da comunidade (Salsa20, heartbeat, offsets) confirmado.
+- Problema visto: **ao fim da corrida os mostradores ficavam parados na última medição** (o GT7
+  pausa ou para de mandar o carro, e a fonte só publicava pacotes "em pista").
+- Correção: `base.REPOUSO` (rpm, velocidade, marcha e acelerador = 0) é publicado uma vez quando
+  o GT7 manda pacote pausado (bit 1), carregando (bit 2) ou com o carro fora da pista (bit 0
+  apagado), e quando passa `SILENCIO_REPOUSO_S` = 1,5 s sem dado do carro. A `FonteUDPF1` faz o
+  mesmo pelo silêncio. Temperatura e tanque ficam no último valor (zerá-los acenderia as luzes de
+  motor frio e de reserva). Contador `repouso` em `contagem`.
+- **A confirmar na próxima corrida**: o bit 0 ("carro na pista") vem da documentação da
+  comunidade; se o painel não reagir durante a corrida, é ele. Também falta conferir a marcha em
+  neutro e ré.
+- Verificação no Eee PC (PC fingindo ser o PS5 por 22 s, tema digital80): 30 fps, CPU 3–7%,
+  RSS 51 MB; captura depois do fim (`docs/img/f28_repouso.png`) com tudo zerado e temperatura e
+  tanque mantidos. Testes: 121 + 4 pulados no PC; `test_gt7` e `test_udp_f1` passam no Eee PC.
+- Lista pública de jogos de console com telemetria: `docs/jogos.md` (ligada no README).
 
 ## FonteGT7 (F2.7b)
 

@@ -61,6 +61,14 @@ CANAIS: Mapping[str, Canal] = MappingProxyType({c.nome: c for c in (
 )})
 
 
+# Valores publicados quando o jogo deixa de mandar o carro (fim da corrida, pausa, menus): os
+# mostradores de movimento voltam ao zero. Temperatura e tanque ficam no último valor: zerá-los
+# acenderia as luzes de motor frio e de reserva sem motivo.
+REPOUSO: Mapping[str, float] = MappingProxyType(
+    {"rpm": 0.0, "velocidade": 0.0, "marcha": 0.0, "acelerador": 0.0})
+SILENCIO_REPOUSO_S = 1.5        # sem dado do carro por este tempo: repouso
+
+
 def canais_desconhecidos(valores: Mapping[str, float]) -> list[str]:
     return [n for n in valores if n not in CANAIS]
 

@@ -36,6 +36,9 @@ def test_iv_diferente_a_cada_pacote() -> None:
     (gt7.montar_pacote(1, 1, 1, 1, 1)[:-1], "tamanho"),
     (gt7.montar_pacote(5000, 100, 3, 50, 90, flags=gt7.FLAG_NA_PISTA | gt7.FLAG_PAUSADO),
      "pausado"),
+    (gt7.montar_pacote(0, 0, 0, 0, 90, flags=gt7.FLAG_NA_PISTA | gt7.FLAG_CARREGANDO),
+     "carregando"),
+    (gt7.montar_pacote(5000, 100, 3, 50, 90, flags=0), "fora_da_pista"),
 ])
 def test_ignora_o_que_nao_serve(dados: bytes, motivo: str) -> None:
     assert gt7.decodificar(dados) == (motivo, {})
@@ -103,3 +106,52 @@ def test_heartbeat_e_recepcao(tmp_path: Path) -> None:
     v = fonte.ultima().valores
     assert v["marcha"] == 3 and v["velocidade"] == pytest.approx(120, abs=1e-3)
     assert len(list(ler_pacotes(str(arq)))) >= 5
+
+
+def test_fim_da_corrida_zera_os_mostradores() -> None:
+    """Carro na pista, depois pausa (repouso na hora), depois volta e para de mandar (silêncio)."""
+    ps5 = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    ps5.bind(("127.0.0.1", 0))
+    ps5.settimeout(0.05)
+    parar = threading.Event()
+    rodando = gt7.montar_pacote(6000, 150, 4, 200, 91, combustivel=20, capacidade=80)
+    pausado = gt7.montar_pacote(6000, 150, 4, 200, 91,
+                                flags=gt7.FLAG_NA_PISTA | gt7.FLAG_PAUSADO)
+    roteiro = [[rodando] * 3, [pausado], [rodando] * 3]          # um item por heartbeat
+
+    def console() -> None:
+        while not parar.is_set():
+            try:
+                dados, origem = ps5.recvfrom(16)
+            except socket.timeout:
+                continue
+            if dados == b"A" and roteiro:
+                for pacote in roteiro.pop(0):
+                    ps5.sendto(pacote, origem)
+
+    t = threading.Thread(target=console, daemon=True)
+    t.start()
+    fonte = gt7.FonteGT7(ps5="127.0.0.1", porta_ps5=ps5.getsockname()[1], porta_local=0,
+                         endereco="127.0.0.1")
+
+    def esperar(condicao, s: float = 4.0) -> None:
+        fim = time.monotonic() + s
+        while not condicao() and time.monotonic() < fim:
+            time.sleep(0.01)
+
+    with fonte:
+        esperar(lambda: fonte.contagem["gt7"] >= 3)
+        assert fonte.ultima().valores["rpm"] == 6000
+        esperar(lambda: fonte.contagem["repouso"] >= 1)
+        v = fonte.ultima().valores
+        assert fonte.contagem["pausado"] == 1                    # zerou pela pausa
+        assert (v["rpm"], v["velocidade"], v["marcha"], v["acelerador"]) == (0, 0, 0, 0)
+        assert v["temp_motor"] == 91 and v["combustivel_nivel"] == 25   # esses ficam
+        esperar(lambda: fonte.contagem["gt7"] >= 6)
+        assert fonte.ultima().valores["rpm"] == 6000
+        esperar(lambda: fonte.contagem["repouso"] >= 2)          # silêncio de 1,5 s
+        assert fonte.ultima().valores["velocidade"] == 0
+    parar.set()
+    t.join(1)
+    ps5.close()
+    assert fonte.erro is None and fonte.contagem["repouso"] == 2
