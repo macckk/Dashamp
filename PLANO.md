@@ -208,7 +208,7 @@ com mensagens de erro claras.
 
 **Aceite:** um tema inválido gera erro legível; um tema válido carrega em < 1 s.
 
-### [ ] F2.6 Três temas
+### [x] F2.6 Três temas
 **Fazer:** gerar os assets por código (scripts em `painel/temas/gerar_*.py`, sem imagens de terceiros):
 - `vintage`: mostradores analógicos de fundo creme, numeração serifada, ponteiro vermelho;
 - `digital80`: bargraph verde/âmbar/vermelho e dígitos de LED;

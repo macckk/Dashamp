@@ -1,0 +1,16 @@
+{
+  "versao": 1,
+  "nome": "Digital 80",
+  "fundo": {"cor": "#08080a", "imagem": "fundo.png"},
+  "widgets": [
+    {"tipo": "barra", "canal": "rpm", "faixa": [0, 8000], "ret": [40, 58, 720, 54], "segmentos": 40, "espaco": 4, "tau": 0.06, "cor": "#3cff5a", "cor_apagada": "#102814", "zonas": [[5000, 6500, "#ffaa00"], [6500, 8000, "#ff281e"]]},
+    {"tipo": "digitos", "canal": "velocidade", "faixa": [0, 260], "pos": [172, 180], "digitos": 3, "altura": 150, "tau": 0.25, "cor": "#ff3c1e", "cor_apagada": "#2a0e0a"},
+    {"tipo": "digitos", "canal": "marcha", "faixa": [0, 6], "pos": [610, 196], "digitos": 1, "altura": 120, "tau": 0, "cor": "#ffa81e", "cor_apagada": "#2a1c08"},
+    {"tipo": "barra", "canal": "temp_motor", "faixa": [20, 130], "ret": [36, 168, 34, 236], "segmentos": 22, "vertical": true, "espaco": 3, "tau": 0.5, "cor": "#3cff5a", "cor_apagada": "#102814", "zonas": [[20, 60, "#3c8cff"], [105, 130, "#ff281e"]]},
+    {"tipo": "barra", "canal": "combustivel_nivel", "faixa": [0, 100], "ret": [730, 168, 34, 236], "segmentos": 22, "vertical": true, "espaco": 3, "tau": 0.5, "cor": "#3cff5a", "cor_apagada": "#102814", "zonas": [[0, 12, "#ff281e"]]},
+    {"tipo": "digitos", "canal": "combustivel_lh", "faixa": [0, 40], "pos": [158, 380], "digitos": 3, "altura": 26, "casas": 1, "tau": 0.4, "cor": "#3cff5a", "cor_apagada": "#102814"},
+    {"tipo": "digitos", "canal": "tensao", "faixa": [0, 18], "pos": [388, 380], "digitos": 3, "altura": 26, "casas": 1, "tau": 0.4, "cor": "#3cff5a", "cor_apagada": "#102814", "zonas": [[0, 12.2, "#ffaa00"]]},
+    {"tipo": "barra", "canal": "acelerador", "faixa": [0, 100], "ret": [130, 420, 540, 14], "segmentos": 30, "espaco": 3, "tau": 0.06, "cor": "#ffa81e", "cor_apagada": "#2a1c08"},
+    {"tipo": "luz", "canal": "rpm", "centro": [645, 371], "raio": 9, "zonas": [[6000, 9000, "#ff281e"]], "piscar_hz": 6}
+  ]
+}

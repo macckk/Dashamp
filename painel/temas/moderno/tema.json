@@ -1,0 +1,15 @@
+{
+  "versao": 1,
+  "nome": "Moderno",
+  "fundo": {"cor": "#06080b", "imagem": "fundo.png"},
+  "widgets": [
+    {"tipo": "arco", "canal": "rpm", "faixa": [0, 8000], "centro": [400, 262], "raio": 214, "espessura": 20, "angulo_zero": 210.0, "varredura": 240.0, "segmentos": 64, "espaco": 1.0, "tau": 0.08, "cor": "#00c4ff", "cor_apagada": "#222a34", "zonas": [[5500, 6500, "#ff9628"], [6500, 8000, "#ff3c32"]]},
+    {"tipo": "numero", "canal": "velocidade", "faixa": [0, 260], "centro": [400, 254], "tamanho": 150, "digitos": 3, "tau": 0.25, "cor": "#f0f4f8"},
+    {"tipo": "numero", "canal": "marcha", "faixa": [0, 6], "centro": [400, 380], "tamanho": 56, "digitos": 1, "tau": 0, "cor": "#00c4ff"},
+    {"tipo": "arco", "canal": "temp_motor", "faixa": [50, 130], "centro": [92, 392], "raio": 70, "espessura": 8, "angulo_zero": 225.0, "varredura": 270.0, "segmentos": 32, "espaco": 1.5, "tau": 0.5, "cor": "#00c4ff", "cor_apagada": "#222a34", "zonas": [[105, 130, "#ff3c32"]]},
+    {"tipo": "numero", "canal": "temp_motor", "faixa": [-40, 150], "centro": [92, 392], "tamanho": 40, "digitos": 3, "tau": 0.5, "cor": "#f0f4f8", "zonas": [[105, 150, "#ff3c32"]]},
+    {"tipo": "arco", "canal": "combustivel_nivel", "faixa": [0, 100], "centro": [708, 392], "raio": 70, "espessura": 8, "angulo_zero": 225.0, "varredura": 270.0, "segmentos": 32, "espaco": 1.5, "tau": 0.5, "cor": "#00c4ff", "cor_apagada": "#222a34", "zonas": [[0, 12, "#ff3c32"]]},
+    {"tipo": "numero", "canal": "combustivel_nivel", "faixa": [0, 100], "centro": [708, 392], "tamanho": 40, "digitos": 3, "tau": 0.5, "cor": "#f0f4f8", "zonas": [[0, 12, "#ff3c32"]]},
+    {"tipo": "luz", "canal": "rpm", "centro": [40, 40], "raio": 10, "zonas": [[6500, 9000, "#ff3c32"]], "piscar_hz": 6}
+  ]
+}

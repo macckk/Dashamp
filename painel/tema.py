@@ -16,7 +16,7 @@ Formato (versão 1). Cores: "#rrggbb" ou [r, g, b]. Posições em pixels da tela
       ]
     }
 
-Tipos de widget e campos: veja `CAMPOS` (cada campo vira o parâmetro de mesmo nome do widget).
+Tipos de widget (ponteiro, barra, digitos, luz, historico, arco, numero) e campos: veja `CAMPOS` (cada campo vira o parâmetro de mesmo nome do widget).
 Comuns: `tipo`, `canal` (do catálogo `CANAIS`), `faixa` [mín, máx] (a luz não usa), `zonas`
 [[de, até, cor], ...] e `tau` (suavização, s). O fundo (cor + imagens + textos + partes estáticas
 dos widgets) é composto uma vez na carga.
@@ -36,7 +36,9 @@ from typing import Any
 import pygame
 
 from painel.fontes.base import CANAIS
-from painel.widgets import Barra, Digitos, Historico, LuzEspia, Painel, Ponteiro, Widget, Zona
+from painel.widgets import (
+    Arco, Barra, Digitos, Historico, LuzEspia, Numero, Painel, Ponteiro, Widget, Zona,
+)
 
 PASTA_TEMAS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "temas")
 VERSAO = 1
@@ -185,6 +187,15 @@ CAMPOS: dict[str, tuple[type[Widget], dict[str, tuple[Callable, bool]]]] = {
         "canal": (_texto, True), "zonas": (_zonas, True), "centro": (_ponto, True),
         "raio": (_positivo, True), "rotulo": (_texto, False), "piscar_hz": (_numero, False),
         "cor_apagada": (_cor, False), "cor_rotulo": (_cor, False)}),
+    "arco": (Arco, {**_COMUNS,
+        "centro": (_ponto, True), "raio": (_positivo, True), "espessura": (_positivo, False),
+        "angulo_zero": (_numero, False), "varredura": (_numero, False),
+        "segmentos": (_positivo, False), "espaco": (_numero, False), "cor": (_cor, False),
+        "cor_apagada": (_cor, False)}),
+    "numero": (Numero, {**_COMUNS,
+        "centro": (_ponto, True), "tamanho": (_positivo, True), "digitos": (_positivo, False),
+        "casas": (_inteiro, False), "cor": (_cor, False), "fonte": (_texto, False),
+        "alinhar": (_texto, False)}),
     "historico": (Historico, {**_COMUNS,
         "ret": (_retangulo, True), "segundos": (_numero, False), "taxa": (_numero, False),
         "cor": (_cor, False), "cor_grade": (_cor, False), "espessura": (_positivo, False)}),
@@ -196,6 +207,8 @@ _POSICIONAIS = {
     "digitos": ("canal", "pos", "digitos", "altura", "minimo", "maximo"),
     "luz": ("canal", "centro", "raio", "zonas"),
     "historico": ("canal", "ret", "minimo", "maximo"),
+    "arco": ("canal", "centro", "raio", "minimo", "maximo"),
+    "numero": ("canal", "centro", "tamanho", "minimo", "maximo"),
 }
 
 

@@ -163,3 +163,44 @@ def test_painel_agrupa_sobrepostos_e_redesenha_so_o_que_muda(tela) -> None:
     assert sujos == [ponteiro.ret.union(marcha.ret)]
     # A marcha continua desenhada depois de o grupo ser restaurado por causa do ponteiro.
     assert _tem_cor(tela, marcha.ret, (0, 0, 255), tolerancia=10)
+
+
+def test_arco_acende_segmentos_na_cor_da_zona(tela) -> None:
+    from painel.widgets import Arco
+
+    a = Arco("rpm", (300, 240), 150, 0, 8000, espessura=20, segmentos=40, tau=0,
+             cor=(0, 200, 255), cor_apagada=(30, 30, 30), zonas=[Zona(6000, 8000, VERMELHO)])
+    fundo = pygame.Surface((800, 480))
+    a.pintar_fundo(fundo)
+    assert len(a._acesos) == 40
+    a.atualizar(8000, 0.033)
+    assert a.acesos() == 40 and a.desenhar(tela, fundo) == [a.ret]
+    meio = 150 - 10
+    import math as m
+    def no_arco(graus: float) -> tuple[int, int]:
+        r = m.radians(graus)
+        return round(300 + meio * m.cos(r)), round(240 - meio * m.sin(r))
+    assert _tem_cor(tela, pygame.Rect(*no_arco(225 - 270 * 0.1), 1, 1).inflate(4, 4), (0, 200, 255))
+    assert _tem_cor(tela, pygame.Rect(*no_arco(225 - 270 * 0.95), 1, 1).inflate(4, 4), VERMELHO)
+    a.atualizar(1000, 0.033)
+    a.desenhar(tela, fundo)
+    assert a.acesos() == 5
+    assert not _tem_cor(tela, pygame.Rect(*no_arco(225 - 270 * 0.95), 1, 1).inflate(4, 4), VERMELHO)
+
+
+def test_numero_tabular_e_zona(tela) -> None:
+    from painel.widgets import Numero
+
+    n = Numero("velocidade", (400, 240), 100, 0, 260, digitos=3, tau=0,
+               zonas=[Zona(121, 260, VERMELHO)])
+    assert n.texto() == "-" and n.texto(13.6) == "14" and n.texto(999) == "260"
+    assert Numero("tensao", (0, 100), 40, 0, 18, casas=1, alinhar="esquerda").texto(14.13) == "14.1"
+    larg = n.ret.width
+    fundo = pygame.Surface((800, 480))
+    n.atualizar(111, 0.033)
+    n.desenhar(tela, fundo)
+    assert n.ret.width == larg and n.ret.center == (400, 240)   # área fixa: não "dança"
+    n.atualizar(150, 0.033)
+    assert n.desenhar(tela, fundo) and _tem_cor(tela, n.ret, VERMELHO)
+    with pytest.raises(ValueError):
+        Numero("x", (0, 0), 10, 0, 1, alinhar="meio")

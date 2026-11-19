@@ -1,0 +1,13 @@
+{
+  "versao": 1,
+  "nome": "Vintage",
+  "fundo": {"cor": "#1a120e", "imagem": "fundo.png"},
+  "widgets": [
+    {"tipo": "ponteiro", "canal": "velocidade", "faixa": [0, 220], "centro": [205, 248], "raio": 175, "sprite": "agulha.png", "escala": false, "cor_ponteiro": "#cd2016"},
+    {"tipo": "ponteiro", "canal": "combustivel_nivel", "faixa": [0, 100], "centro": [205, 352], "raio": 58, "angulo_zero": 140.0, "varredura": 100.0, "sprite": "agulha_pequena.png", "tau": 0.5, "escala": false, "cor_ponteiro": "#cd2016"},
+    {"tipo": "ponteiro", "canal": "rpm", "faixa": [0, 8000], "centro": [595, 248], "raio": 175, "sprite": "agulha.png", "escala": false, "cor_ponteiro": "#cd2016"},
+    {"tipo": "ponteiro", "canal": "temp_motor", "faixa": [50, 130], "centro": [595, 352], "raio": 58, "angulo_zero": 140.0, "varredura": 100.0, "sprite": "agulha_pequena.png", "tau": 0.5, "escala": false, "cor_ponteiro": "#cd2016"},
+    {"tipo": "luz", "canal": "rpm", "centro": [30, 425], "raio": 11, "zonas": [[6500, 9000, "#ff3020"]], "piscar_hz": 5},
+    {"tipo": "luz", "canal": "tensao", "centro": [770, 425], "raio": 11, "zonas": [[0, 12.2, "#ffb000"]]}
+  ]
+}

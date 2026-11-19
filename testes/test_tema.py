@@ -117,3 +117,18 @@ def test_junta_todos_os_erros(tmp_path: Path) -> None:
 def test_tema_inexistente_lista_os_disponiveis() -> None:
     with pytest.raises(tm.ErroTema, match="temas: .*exemplo"):
         tm.carregar("nao_existe")
+
+
+@pytest.mark.parametrize("nome, tipos", [
+    ("vintage", {"Ponteiro", "LuzEspia"}),
+    ("digital80", {"Barra", "Digitos", "LuzEspia"}),
+    ("moderno", {"Arco", "Numero", "LuzEspia"}),
+])
+def test_tres_temas_do_projeto(nome: str, tipos: set[str]) -> None:
+    t = tm.carregar(nome)
+    assert t.segundos_carga < 1.0
+    assert {type(w).__name__ for w in t.painel.widgets} == tipos
+    assert os.path.isfile(os.path.join(t.pasta, "fundo.png"))
+    # O fundo veio da imagem (não é a cor lisa).
+    f = t.painel.fundo
+    assert len({tuple(f.get_at((x, 240))) for x in range(0, 800, 20)}) > 3

@@ -1,7 +1,36 @@
 # Estado do Dashamp
 
-Última tarefa concluída: **F2.5** (formato de tema).
-Próxima: **F2.6** — três temas (vintage, digital80, moderno) gerados por código.
+Última tarefa concluída: **F2.6** (três temas).
+Próxima: **F2.7** — `FonteUDP` (telemetria do F1); precisa saber qual edição do jogo o
+mantenedor tem.
+
+## Três temas (F2.6)
+
+- Geradores em `painel/temas/gerar_{vintage,digital80,moderno}.py` (`python -m
+  painel.temas.gerar_vintage`), com ferramentas comuns em `painel/temas/desenho.py`: fundo
+  desenhado em 2× e reduzido com smoothscale (antisserrilhado), escalas analógicas com o mesmo
+  mapeamento de ângulo dos widgets, aro metálico, degradês, granulado, sprite de agulha. Os PNGs e
+  o `tema.json` gerados são commitados.
+- **Fontes**: só DejaVu (licença livre), lida de `/usr/share/fonts/truetype/dejavu` ou de
+  `tmp/fontes/` (fora do Git; copiada do Eee PC). A fonte não vai para o repositório, só os PNGs
+  com os números já desenhados. No laço o painel usa a fonte padrão do pygame.
+- Widgets novos: `Arco` (anel segmentado; cada segmento aceso é um sprite pequeno pré-renderizado,
+  sem desenho de polígono no laço) e `Numero` (número com fonte, dígitos tabulares para não
+  "dançar"). Ambos no formato de tema (`"tipo": "arco"`, `"numero"`).
+- Temas:
+  - `vintage`: dois mostradores creme com aro cromado, números em DejaVu Serif, ponteiros
+    vermelhos (sprite gerado), combustível e temperatura em submostradores, fundo de couro;
+  - `digital80`: rpm em bargraph de 40 segmentos verde/âmbar/vermelho, velocidade e marcha em
+    LED de 7 segmentos, barras verticais de temperatura e combustível, consumo e tensão;
+  - `moderno`: arco de rpm com 64 segmentos e a velocidade em número grande no centro, arcos
+    pequenos de temperatura e combustível.
+- `painel.main`: tema padrão `vintage`; tecla **T** passa para o próximo tema sem reiniciar
+  (`--ciclo-temas S` para medir).
+- **Aceite no Eee PC** (30 s cada, FonteSimulada, sem captura): vintage 30,0 fps, CPU 8–34%
+  (picos enquanto o cache dos ponteiros enche), RSS 56 MB; digital80 30,0 fps, CPU 4–10%,
+  49 MB; moderno 30,0 fps, CPU 5–17%, 49 MB. Carga: 185 / 231 / 300–352 ms. Trocando a cada 3 s
+  o fps médio do intervalo cai para 27–29 (cada carga para o laço). Com captura, o intervalo do
+  PNG cai para 27,7–29,1 (a gravação do PNG). Capturas em `docs/img/f26_*.png`. 98 testes no PC.
 
 ## Formato de tema (F2.5)
 
