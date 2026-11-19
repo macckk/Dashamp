@@ -5,7 +5,8 @@
                           [--gravar-udp ARQ] [--obd [PORTA] [--obd-baud 38400]
                           [--combustivel gasolina_br] [--cilindrada 1.6]]
 
-No Eee PC: F1 = player, F2 = painel recebendo o GT7, F3 = painel com a simulação (core.app).
+No Eee PC: F1 = player, F2 = painel com o GT7, F3 = com a simulação, F4 = lendo o carro (OBD),
+F5 = diagnóstico do carro (core.app).
 Enquanto não chega telemetria, uma caixa na tela diz o que falta (com o IP deste aparelho).
 
 Fonte padrão: a simulada; `--udp` escuta a telemetria do F1 24; `--gt7` pede a do Gran Turismo 7

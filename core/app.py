@@ -6,7 +6,7 @@ Todo app do projeto usa `App` e ganha as opções comuns:
   --duracao N     encerra sozinho após N segundos (testes e medições pelo SSH)
   --janela        janela com bordas e cursor (desenvolvimento no PC)
 
-Quando aberto pelo deploy/run.sh (variável DASHAMP_ARQUIVO_APP), as teclas F1, F2 e F3 trocam
+Quando aberto pelo deploy/run.sh (variável DASHAMP_ARQUIVO_APP), as teclas F1 a F5 trocam
 de app: gravam a escolha no ~/dashamp/.app e encerram; o laço do .xinitrc abre o app novo.
 
 `python -m core.app` abre uma tela de teste (barras de cor, moldura, quadrado animado e fps).
@@ -31,7 +31,8 @@ LARGURA, ALTURA = 800, 480
 FPS_ALVO = 30
 
 # Tecla → linha do .app (ver deploy/run.sh).
-ATALHOS_APP = {pygame.K_F1: "player", pygame.K_F2: "painel --gt7", pygame.K_F3: "painel"}
+ATALHOS_APP = {pygame.K_F1: "player", pygame.K_F2: "painel --gt7", pygame.K_F3: "painel",
+               pygame.K_F4: "painel --obd", pygame.K_F5: "diagnostico"}
 
 
 def arquivo_app() -> str | None:

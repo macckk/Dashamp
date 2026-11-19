@@ -28,6 +28,7 @@ O `import obd` (que carrega o pint) leva ~4 s no Eee PC: ele é feito dentro da 
 painel abrir na hora.
 
     python -m painel.fontes.obd [--porta /dev/ttyUSB0 | socket://host:35000] [--baud 38400]
+    python -m painel.fontes.obd --diagnostico [--porta ...]    # relatório (carputer.diagnostico)
 """
 from __future__ import annotations
 
@@ -134,6 +135,30 @@ class ConexaoPythonOBD:
         r = self._c.query(self._obd.commands.CLEAR_DTC, force=True)
         # Resposta positiva do modo 04: 0x44 (a ECU pode recusar com o motor ligado).
         return any(m.data[:1] == bytearray([0x44]) for m in r.messages)
+
+    # --- usados só pelo diagnóstico (carputer.diagnostico) ------------------------------
+
+    def suportados(self) -> list[tuple[str, str]]:
+        """(nome, descrição) dos comandos dos modos 01 e 09 que o carro tem, na ordem dos PIDs
+        (sem os PIDS_* que só listam outros PIDs)."""
+        cmds = [c for c in self._c.supported_commands
+                if c.mode in (1, 9) and not c.name.startswith("PIDS_")]
+        cmds.sort(key=lambda c: (c.mode, c.pid or 0))
+        return [(c.name, c.desc) for c in cmds]
+
+    def consultar_texto(self, comando: str) -> str | None:
+        """Valor legível de qualquer comando (número com unidade, texto, status)."""
+        r = self._c.query(self._obd.commands[comando], force=True)
+        if r.is_null():
+            return None
+        v = r.value
+        if hasattr(v, "magnitude"):
+            return f"{v.magnitude:g} {v.units:~}".strip()
+        if hasattr(v, "MIL"):                                  # STATUS (01 01)
+            return f"luz da injeção {'acesa' if v.MIL else 'apagada'}, {v.DTC_count} código(s)"
+        if isinstance(v, (bytes, bytearray)):
+            return v.decode("ascii", "replace").strip()
+        return str(v)
 
     def fechar(self) -> None:
         self._c.close()
@@ -310,7 +335,16 @@ def main() -> None:
     p.add_argument("--porta", help="padrão: procurar")
     p.add_argument("--baud", type=int)
     p.add_argument("--segundos", type=float, default=0)
+    p.add_argument("--diagnostico", action="store_true",
+                   help="protocolo, PIDs suportados e taxa real; salva o relatório")
     a = p.parse_args()
+    if a.diagnostico:
+        from carputer.diagnostico import diagnosticar, salvar  # noqa: PLC0415
+
+        relatorio = diagnosticar(a.porta, a.baud)
+        print(relatorio)
+        print(f"relatório salvo em {salvar(relatorio)}")
+        return
     fonte = FonteOBD(a.porta, a.baud)
     fonte.iniciar()
     t0 = time.monotonic()

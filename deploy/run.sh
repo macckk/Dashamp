@@ -6,7 +6,9 @@
 #   player [arquivos/pastas]   -> player com skin (padrão: ~/musica)
 #   painel [--tema nome]       -> painel de instrumentos com a fonte simulada
 #   teste                      -> tela de teste do núcleo
-#   (no Eee PC: F1 = player, F2 = painel recebendo o GT7 do PS5, F3 = painel com a simulação)
+#   diagnostico [--porta P]    -> diagnóstico OBD-II do carro (relatório em ~/dashamp/.dados)
+#   (no Eee PC: F1 = player, F2 = painel recebendo o GT7 do PS5, F3 = painel com a simulação,
+#    F4 = painel lendo o carro pelo OBD, F5 = diagnóstico do carro)
 #   nada                       -> nenhum app (X ocioso; para medições sem interferência)
 #   <módulo python> [args]     -> qualquer outro módulo, ex.: core.app --metricas
 set -u
@@ -21,6 +23,7 @@ case "$nome" in
     bench) modulo="core.bench_ponteiro"; base=(--modo cache --mostradores 2) ;;
     player) modulo="player.main"; base=() ;;
     painel) modulo="painel.main"; base=() ;;
+    diagnostico) modulo="carputer.diagnostico"; base=() ;;
     teste) modulo="core.app"; base=() ;;
     # Espera o .app mudar (sem precisar matar nada) e sai; o laço do .xinitrc abre o novo app.
     nada)  while [[ "$(head -n1 "$raiz/.app" 2>/dev/null)" == nada* ]]; do sleep 2; done
@@ -29,7 +32,7 @@ case "$nome" in
 esac
 
 cd "$raiz" || exit 1
-# Os apps usam isto para trocar de app pelas teclas F1/F2/F3 (gravam o .app e saem).
+# Os apps usam isto para trocar de app pelas teclas F1 a F5 (gravam o .app e saem).
 export DASHAMP_ARQUIVO_APP="$raiz/.app"
 # Saída no /tmp (tmpfs): nada grava no flash. O arquivo recomeça a cada abertura do app.
 # shellcheck disable=SC2086  # extras: argumentos separados por espaço, de propósito

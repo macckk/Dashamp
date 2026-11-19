@@ -3,7 +3,8 @@
 # Uso: ./deploy/deploy.sh [--deps]
 #   --deps  também instala/atualiza deploy/requirements.txt no venv do Eee PC.
 # Usa rsync quando existe no PC; senão (Git Bash no Windows), tar pelo SSH com troca atômica
-# da pasta, preservando o venv e a escolha de app (.app) do Eee PC.
+# da pasta, preservando o venv, a escolha de app (.app) e os dados gravados no Eee PC (.dados:
+# relatórios de diagnóstico, viagens).
 set -euo pipefail
 
 raiz="$(cd "$(dirname "$0")/.." && pwd)"
@@ -13,7 +14,7 @@ if [[ -f "$raiz/.env" ]]; then
     host="${valor:-$host}"
 fi
 
-excluir=(.git .venv __pycache__ '*.pyc' tmp 'Claude outputs' .app)
+excluir=(.git .venv __pycache__ '*.pyc' tmp 'Claude outputs' .app .dados)
 
 if command -v rsync >/dev/null 2>&1; then
     args=()
@@ -23,13 +24,13 @@ else
     args=()
     for e in "${excluir[@]}"; do args+=(--exclude="$e"); done
     # Extrai em ~/dashamp/.novo e só então troca o conteúdo; tudo que é apagado fica dentro
-    # de ~/dashamp (regra 6 do CLAUDE.md). .venv e .app nunca são tocados.
+    # de ~/dashamp (regra 6 do CLAUDE.md). .venv, .app e .dados nunca são tocados.
     tar -cz "${args[@]}" -C "$raiz" . | ssh "$host" '
         set -e
         cd ~ && mkdir -p dashamp && cd dashamp
         rm -rf .novo && mkdir .novo
         tar -xzf - -C .novo
-        find . -mindepth 1 -maxdepth 1 ! -name .venv ! -name .app ! -name .novo -exec rm -rf {} +
+        find . -mindepth 1 -maxdepth 1 ! -name .venv ! -name .app ! -name .dados ! -name .novo -exec rm -rf {} +
         find .novo -mindepth 1 -maxdepth 1 -exec mv {} . \;
         rmdir .novo
         find . -path ./.venv -prune -o -name "*.sh" -exec chmod +x {} +'

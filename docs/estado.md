@@ -3,6 +3,27 @@
 Última tarefa concluída: **F3.2** (consumo e códigos de erro).
 Próxima: **F3.3** `[HUMANO]` — primeira leitura no carro.
 
+## Preparação para a F3.3 (no carro, sem SSH)
+
+- `carputer/diagnostico.py` (o `--diagnostico` que a F3.3 pede, também em
+  `python -m painel.fontes.obd --diagnostico`): conecta no ELM327 (espera até 2 min, avisando se
+  falta a ignição), anota protocolo, versão do adaptador, tensão, combustível, norma OBD, luz da
+  injeção, lê **cada PID suportado** uma vez com o tempo de resposta, mede o rpm sozinho (10 s) e
+  a agenda do painel (20 s), lista os códigos de erro. Relatório em Markdown com campos para
+  modelo/ano/motor.
+- **Privacidade**: do VIN ficam só o fabricante (WMI) e o ano-modelo; o número inteiro nunca é
+  gravado. O `docs/carro.md` público sai desse relatório, revisado.
+- Os relatórios vão para `~/dashamp/.dados/diagnosticos/`. **O deploy apagava tudo em
+  `~/dashamp` fora do repositório** (menos `.venv` e `.app`); agora `.dados` também é preservado
+  (testado: arquivo sobreviveu ao deploy). As viagens da F3.4 vão para a mesma pasta.
+- Teclas novas: **F4** = `painel --obd` (procura o adaptador), **F5** = `diagnostico` (tela com o
+  andamento; **R** repete). `run.sh` ganhou o caso `diagnostico`.
+- O usuário `dashamp` não estava no grupo `dialout` (dono de `/dev/ttyUSB0`): adicionado com
+  `usermod -aG dialout dashamp`; vale a partir do próximo boot.
+- Verificação no Eee PC (emulador com P0420 armazenado e P0171 pendente): 45 PIDs lidos (média
+  10 ms), rpm sozinho 136/s, painel 15 rpm/s, códigos certos, VIN resumido, relatório salvo;
+  a tela ficou em 30 fps, CPU < 5%. Testes: 156 + 5 pulados no PC; 161 no Eee PC.
+
 ## Consumo e códigos de erro (F3.2)
 
 - `carputer/consumo.py`: L/h pelo **PID 5E** quando o carro tem; senão **MAF / (AFR × λ)**
