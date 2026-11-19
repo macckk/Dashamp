@@ -20,7 +20,8 @@ from painel.fontes.base import CANAIS
 TODOS = {"RPM": 2000.0, "SPEED": 50.0, "THROTTLE_POS": 20.0, "ENGINE_LOAD": 30.0,
          "INTAKE_PRESSURE": 40.0, "MAF": 5.0, "COOLANT_TEMP": 90.0, "INTAKE_TEMP": 25.0,
          "CONTROL_MODULE_VOLTAGE": 14.1, "FUEL_LEVEL": 60.0, "O2_B1S2": 0.45,
-         "SHORT_FUEL_TRIM_1": 1.5, "LONG_FUEL_TRIM_1": -2.0, "ELM_VOLTAGE": 13.9}
+         "SHORT_FUEL_TRIM_1": 1.5, "LONG_FUEL_TRIM_1": -2.0, "ELM_VOLTAGE": 13.9,
+         "COMMANDED_EQUIV_RATIO": 1.0}
 
 
 class Falso:
@@ -31,6 +32,9 @@ class Falso:
         self.pids, self._situacao, self.cair_em, self.atraso_s = pids, situacao, cair_em, atraso_s
         self.lidos: Counter[str] = Counter()
         self.fechado = False
+        self.codigos = {"armazenados": [("P0143", "O2 Sensor Circuit Low Voltage")],
+                        "pendentes": [("P0300", "")]}
+        self.aceita_apagar = True
 
     def situacao(self) -> str:
         return self._situacao
@@ -44,6 +48,14 @@ class Falso:
             return None
         self.lidos[comando] += 1
         return self.pids[comando]
+
+    def erros(self, tipo: str) -> list[tuple[str, str]]:
+        return list(self.codigos[tipo])
+
+    def apagar_erros(self) -> bool:
+        if self.aceita_apagar:
+            self.codigos = {t: [] for t in self.codigos}
+        return self.aceita_apagar
 
     def fechar(self) -> None:
         self.fechado = True
@@ -82,7 +94,7 @@ def test_prioridade_rapidos_em_todo_ciclo() -> None:
     assert rpm > 10 * temp and rpm <= 1.5 * fo.CICLOS_MAX_HZ + 1   # teto de ciclos
     v = fonte.ultima().valores
     assert v["temp_motor"] == 90 and v["tensao"] == 14.1 and v["trim_longo"] == -2.0
-    assert set(fonte.canais) == {p.canal for p in fo.AGENDA}
+    assert set(fonte.canais) == {p.canal for p in fo.AGENDA} - {"combustivel_lh"}  # sem PID 5E
     assert fonte.taxa_rpm > 10
 
 
@@ -141,8 +153,9 @@ def test_emulador_e_reinicio(tmp_path) -> None:
     porta = _porta_livre()
 
     def emulador() -> subprocess.Popen:
-        return subprocess.Popen([sys.executable, "-m", "elm", "-s", "car", "-n", str(porta),
-                                 "-b", str(tmp_path / "elm.txt")],
+        return subprocess.Popen([sys.executable, "scripts/emulador_obd.py", "--erros",
+                                 "P0143,P0300", "--pendentes", "C0035", "--", "-s", "car",
+                                 "-n", str(porta), "-b", str(tmp_path / "elm.txt")],
                                 stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
     emu = emulador()
@@ -151,6 +164,13 @@ def test_emulador_e_reinicio(tmp_path) -> None:
         with fonte:
             assert esperar(lambda: fonte.contagem["ciclos"] >= 10, 60), dict(fonte.contagem)
             assert {"rpm", "velocidade", "temp_motor", "tensao"} <= set(fonte.canais)
+            codigos = fonte.ler_erros().result(20)
+            assert [c for c, _ in codigos["armazenados"]] == ["P0143", "P0300"]
+            assert [c for c, _ in codigos["pendentes"]] == ["C0035"]
+            assert "Misfire" in codigos["armazenados"][1][1]
+            assert fonte.apagar_erros().result(20) is True
+            assert fonte.ler_erros().result(20) == {"armazenados": [], "pendentes": []}
+            assert fonte.ultima().valores["combustivel_lh"] >= 0          # pelo MAF
             emu.terminate()
             emu.wait(10)
             assert esperar(lambda: fonte.contagem["reconexao"] >= 1, 30), dict(fonte.contagem)
@@ -162,3 +182,63 @@ def test_emulador_e_reinicio(tmp_path) -> None:
     finally:
         emu.terminate()
         emu.wait(10)
+
+
+def test_consumo_publicado_pelo_maf() -> None:
+    falso = Falso(TODOS)                           # MAF 5 g/s, 50 km/h, λ 1,0
+    fonte = fo.FonteOBD(conectar=lambda p, b: falso, combustivel="gasolina")
+    with fonte:
+        assert esperar(lambda: fonte.contagem["ciclos"] >= 10)
+    v = fonte.ultima().valores
+    assert fonte.consumo.metodo == "maf"
+    assert v["combustivel_lh"] == pytest.approx(5 / 14.7 * 3600 / 745)     # 1,644 L/h
+    assert v["consumo_kml"] == pytest.approx(50 / v["combustivel_lh"])
+    assert "consumo_medio_kml" not in v or v["consumo_medio_kml"] > 0
+
+
+def test_consumo_pelo_pid_5e_quando_existe() -> None:
+    falso = Falso({**TODOS, "FUEL_RATE": 7.5})
+    fonte = fo.FonteOBD(conectar=lambda p, b: falso)
+    with fonte:
+        assert esperar(lambda: fonte.contagem["ciclos"] >= 3
+                       and falso.lidos["FUEL_RATE"] >= 1)
+    assert fonte.consumo.metodo == "pid"
+    assert fonte.ultima().valores["combustivel_lh"] == 7.5
+
+
+def test_ler_e_apagar_codigos_pela_thread() -> None:
+    falso = Falso(TODOS)
+    fonte = fo.FonteOBD(conectar=lambda p, b: falso)
+    with fonte:
+        assert esperar(lambda: fonte.situacao == "conectado")
+        codigos = fonte.ler_erros().result(2)
+        assert codigos == {"armazenados": [("P0143", "O2 Sensor Circuit Low Voltage")],
+                           "pendentes": [("P0300", "")]}
+        falso.aceita_apagar = False                 # motor ligado: a central recusa
+        assert fonte.apagar_erros().result(2) is False
+        falso.aceita_apagar = True
+        assert fonte.apagar_erros().result(2) is True
+        assert fonte.ler_erros().result(2) == {"armazenados": [], "pendentes": []}
+    assert fonte.erro is None
+
+
+def test_pedido_sem_carro_falha_na_hora() -> None:
+    fonte = fo.FonteOBD(conectar=lambda p, b: Falso(TODOS, situacao="sem_carro"),
+                        intervalo_reconexao_s=0.05)
+    f = fonte.ler_erros()                           # nem iniciada
+    with pytest.raises(fo.SemConexao):
+        f.result(1)
+    with fonte:
+        assert esperar(lambda: fonte.contagem["falha_conexao"] >= 1)
+        with pytest.raises(fo.SemConexao):
+            fonte.apagar_erros().result(1)
+
+
+def test_pedido_pendente_recebe_erro_quando_a_conexao_cai() -> None:
+    falso = Falso(TODOS, cair_em=40, atraso_s=0.01)
+    fonte = fo.FonteOBD(conectar=lambda p, b: falso, intervalo_reconexao_s=5)
+    with fonte:
+        assert esperar(lambda: fonte.situacao == "conectado")
+        falso.erros = lambda tipo: (_ for _ in ()).throw(fo.SemConexao("sem resposta"))
+        with pytest.raises(fo.SemConexao):
+            fonte.ler_erros().result(3)

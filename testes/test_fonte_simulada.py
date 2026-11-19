@@ -9,7 +9,8 @@ from painel.fontes.base import CANAIS, canais_desconhecidos
 from painel.fontes.simulada import KMH_POR_1000, FonteSimulada, simular
 
 # Canais que só o OBD tem (a simulação não os produz).
-SO_OBD = {"maf", "trim_curto", "trim_longo", "sonda_o2"}
+SO_OBD = {"maf", "trim_curto", "trim_longo", "sonda_o2", "lambda", "consumo_kml",
+          "consumo_medio_kml"}
 
 
 @pytest.fixture(scope="module")

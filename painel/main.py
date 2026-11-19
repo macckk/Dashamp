@@ -2,14 +2,17 @@
 
     python -m painel.main [--tema vintage] [--replay viagem.db --velocidade 2] [--metricas]
                           [--ciclo-temas S] [--udp [--porta 20777]] [--gt7 [--ps5 IP]]
-                          [--gravar-udp ARQ] [--obd [PORTA] [--obd-baud 38400]]
+                          [--gravar-udp ARQ] [--obd [PORTA] [--obd-baud 38400]
+                          [--combustivel gasolina_br] [--cilindrada 1.6]]
 
 No Eee PC: F1 = player, F2 = painel recebendo o GT7, F3 = painel com a simulação (core.app).
 Enquanto não chega telemetria, uma caixa na tela diz o que falta (com o IP deste aparelho).
 
 Fonte padrão: a simulada; `--udp` escuta a telemetria do F1 24; `--gt7` pede a do Gran Turismo 7
 ao PS5 (procura o console na rede, ou `--ps5 IP`); `--obd` lê o carro por um ELM327 (sem porta:
-procura; ou /dev/ttyUSB0, /dev/rfcomm0, socket://host:porta do emulador). `--gravar-udp` guarda os pacotes brutos. **T** passa para o próximo tema (sem reiniciar); Esc/Q sai.
+procura; ou /dev/ttyUSB0, /dev/rfcomm0, socket://host:porta do emulador). Com `--obd`, **E** abre a
+tela de códigos de erro (carputer.tela_erros); `--combustivel` e `--cilindrada` (litros, só para
+carro sem sensor MAF) entram no cálculo do consumo. `--gravar-udp` guarda os pacotes brutos. **T** passa para o próximo tema (sem reiniciar); Esc/Q sai.
 Um tema inválido na abertura termina com a lista de erros; na troca, os erros são impressos e o
 tema atual continua.
 """
@@ -89,6 +92,10 @@ def main(argv: Sequence[str] | None = None) -> None:
     p.add_argument("--obd", nargs="?", const="auto", metavar="PORTA",
                    help="carro pelo adaptador ELM327 (sem PORTA: procura)")
     p.add_argument("--obd-baud", type=int, help="com --obd: velocidade da serial (padrão: detectar)")
+    p.add_argument("--combustivel", default="gasolina_br",
+                   help="com --obd: gasolina, gasolina_br (E27) ou etanol")
+    p.add_argument("--cilindrada", type=float, metavar="L",
+                   help="com --obd: cilindrada em litros (consumo de carro sem MAF)")
     args = p.parse_args(argv)
     app = App(args, "Dashamp - painel")
     try:
@@ -100,6 +107,7 @@ def main(argv: Sequence[str] | None = None) -> None:
     print(f"tema '{tema.nome}' carregado em {tema.segundos_carga * 1000:.0f} ms "
           f"({len(tema.painel.widgets)} widgets)", flush=True)
     aviso: AvisoEspera | None = None
+    tela_erros = None
     if args.gt7:
         from painel.fontes.gt7 import FonteGT7
 
@@ -122,7 +130,11 @@ def main(argv: Sequence[str] | None = None) -> None:
         from painel.fontes.obd import FonteOBD
 
         porta = None if args.obd == "auto" else args.obd
-        fonte = FonteOBD(porta, args.obd_baud)
+        fonte = FonteOBD(porta, args.obd_baud, combustivel=args.combustivel,
+                         cilindrada_l=args.cilindrada)
+        from carputer.tela_erros import TelaErros
+
+        tela_erros = TelaErros(fonte)
         print(f"OBD: {porta or 'procurando o adaptador'}", flush=True)
         textos_obd = {
             "sem_carro": ("Adaptador OBD encontrado", "Ligue a ignição do carro",
@@ -160,8 +172,16 @@ def main(argv: Sequence[str] | None = None) -> None:
         print(f"tema '{novo.nome}' em {novo.segundos_carga * 1000:.0f} ms", flush=True)
 
     def ao_evento(ev: pygame.event.Event) -> None:
-        if ev.type == pygame.KEYDOWN and ev.key == pygame.K_t:
+        if ev.type != pygame.KEYDOWN:
+            return
+        if tela_erros is not None and tela_erros.ativa:
+            if tela_erros.tecla(ev.key):                 # fechou: o painel volta inteiro
+                estado["tema"].painel.redesenhar_tudo()   # (a caixa de espera vem junto)
+            return
+        if ev.key == pygame.K_t:
             trocar()
+        elif ev.key == pygame.K_e and tela_erros is not None:
+            tela_erros.abrir()
 
     def quadro(tela: pygame.Surface, dt: float) -> list[pygame.Rect] | None:
         aviso = estado["aviso"]
@@ -172,6 +192,8 @@ def main(argv: Sequence[str] | None = None) -> None:
                 trocar()
         painel = estado["tema"].painel
         painel.atualizar(fonte, dt)
+        if tela_erros is not None and tela_erros.ativa:
+            return tela_erros.desenhar(tela)
         if aviso is not None:
             if fonte.ultima() is None:
                 sujos = painel.desenhar(tela)

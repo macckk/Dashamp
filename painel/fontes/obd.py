@@ -17,6 +17,13 @@ publica `REPOUSO` (os ponteiros descem), fecha a porta e tenta de novo a cada 3 
 Por que não `obd.Async`: ele lê todos os comandos observados em sequência, sem prioridade; a thread
 da `Fonte` já é o laço assíncrono, e o agendador fica nela.
 
+**Consumo (F3.2).** Cada leitura publicada ganha `combustivel_lh`, `consumo_kml` e
+`consumo_medio_kml` (`carputer.consumo`): pelo PID 5E se o carro tiver, senão pelo MAF, senão
+pela pressão do coletor com a cilindrada informada.
+
+**Códigos de erro (F3.2).** A porta é uma só, então ler e apagar códigos também passam pela
+thread: `ler_erros()` e `apagar_erros()` devolvem um `Future`, atendido entre dois ciclos.
+
 O `import obd` (que carrega o pint) leva ~4 s no Eee PC: ele é feito dentro da thread, para o
 painel abrir na hora.
 
@@ -26,12 +33,15 @@ from __future__ import annotations
 
 import argparse
 import logging
+import queue
 import time
 from collections import Counter
+from concurrent.futures import Future
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from typing import Protocol
 
+from carputer.consumo import Consumo
 from painel.fontes.base import REPOUSO, Fonte
 
 INTERVALO_RECONEXAO_S = 3.0
@@ -56,6 +66,7 @@ AGENDA: tuple[PidCanal, ...] = (
     PidCanal("carga", ("ENGINE_LOAD",), 0.5),
     PidCanal("pressao_coletor", ("INTAKE_PRESSURE",), 0.5),
     PidCanal("maf", ("MAF",), 0.5),
+    PidCanal("combustivel_lh", ("FUEL_RATE",), 0.5),
     PidCanal("temp_motor", ("COOLANT_TEMP",), 1.0),
     PidCanal("temp_ar", ("INTAKE_TEMP",), 1.0),
     PidCanal("tensao", ("CONTROL_MODULE_VOLTAGE", "ELM_VOLTAGE"), 1.0),
@@ -63,7 +74,16 @@ AGENDA: tuple[PidCanal, ...] = (
     PidCanal("sonda_o2", ("O2_B1S1", "O2_B1S2"), 1.0),
     PidCanal("trim_curto", ("SHORT_FUEL_TRIM_1",), 1.0),
     PidCanal("trim_longo", ("LONG_FUEL_TRIM_1",), 1.0),
+    PidCanal("lambda", ("COMMANDED_EQUIV_RATIO",), 1.0),
 )
+
+# Códigos de erro: (código, descrição em inglês do python-OBD, "" se ele não conhece).
+Codigo = tuple[str, str]
+TIPOS_ERRO = ("armazenados", "pendentes")      # modo 03 e modo 07
+
+
+class SemConexao(RuntimeError):
+    """O carro não está conectado (ou a resposta não veio)."""
 
 
 class Conexao(Protocol):
@@ -72,6 +92,8 @@ class Conexao(Protocol):
     def situacao(self) -> str: ...          # "sem_adaptador" | "sem_carro" | "conectado"
     def suporta(self, comando: str) -> bool: ...
     def ler(self, comando: str) -> float | None: ...
+    def erros(self, tipo: str) -> list[Codigo]: ...   # tipo em TIPOS_ERRO
+    def apagar_erros(self) -> bool: ...
     def fechar(self) -> None: ...
 
 
@@ -100,6 +122,18 @@ class ConexaoPythonOBD:
             return None
         v = r.value
         return float(getattr(v, "magnitude", v))
+
+    def erros(self, tipo: str) -> list[Codigo]:
+        nome = {"armazenados": "GET_DTC", "pendentes": "GET_CURRENT_DTC"}[tipo]
+        r = self._c.query(self._obd.commands[nome], force=True)
+        if r.is_null():
+            raise SemConexao(f"sem resposta ao pedido de códigos {tipo}")
+        return [(str(c), str(d or "")) for c, d in r.value]
+
+    def apagar_erros(self) -> bool:
+        r = self._c.query(self._obd.commands.CLEAR_DTC, force=True)
+        # Resposta positiva do modo 04: 0x44 (a ECU pode recusar com o motor ligado).
+        return any(m.data[:1] == bytearray([0x44]) for m in r.messages)
 
     def fechar(self) -> None:
         self._c.close()
@@ -133,8 +167,12 @@ class FonteOBD(Fonte):
 
     def __init__(self, porta: str | None = None, baudrate: int | None = None,
                  conectar: FabricaConexao | None = None,
-                 intervalo_reconexao_s: float = INTERVALO_RECONEXAO_S) -> None:
+                 intervalo_reconexao_s: float = INTERVALO_RECONEXAO_S,
+                 combustivel: str = "gasolina_br", cilindrada_l: float | None = None,
+                 ve: float = 0.85) -> None:
         super().__init__()
+        self.consumo = Consumo(combustivel, cilindrada_l, ve)
+        self._pedidos: queue.SimpleQueue[tuple[Callable[[Conexao], object], Future]] =             queue.SimpleQueue()
         self.porta, self.baudrate = porta, baudrate
         self._conectar = conectar or ConexaoPythonOBD
         self.intervalo_reconexao_s = intervalo_reconexao_s
@@ -150,6 +188,41 @@ class FonteOBD(Fonte):
         dt = time.monotonic() - self._t_conexao
         return self._rpm_lidos / dt if self._t_conexao and dt > 0 else 0.0
 
+    # --- códigos de erro (chamados pela interface) ---------------------------------------
+
+    def pedir(self, func: Callable[[Conexao], object]) -> Future:
+        """Executa `func(conexao)` na thread da fonte, entre dois ciclos."""
+        f: Future = Future()
+        if self.situacao != "conectado" or not self.ativa:
+            f.set_exception(SemConexao("o carro não está conectado"))
+        else:
+            self._pedidos.put((func, f))
+        return f
+
+    def ler_erros(self) -> Future:
+        """Future de {"armazenados": [(código, descrição)...], "pendentes": [...]}."""
+        return self.pedir(lambda c: {t: c.erros(t) for t in TIPOS_ERRO})
+
+    def apagar_erros(self) -> Future:
+        """Future de bool: a ECU confirmou o apagamento."""
+        return self.pedir(lambda c: c.apagar_erros())
+
+    def _atender_pedidos(self, conexao: Conexao | None) -> None:
+        while True:
+            try:
+                func, f = self._pedidos.get_nowait()
+            except queue.Empty:
+                return
+            if not f.set_running_or_notify_cancel():
+                continue
+            if conexao is None:
+                f.set_exception(SemConexao("a conexão com o carro caiu"))
+                continue
+            try:
+                f.set_result(func(conexao))
+            except Exception as e:  # noqa: BLE001 — vai para quem pediu
+                f.set_exception(e)
+
     def _rodar(self) -> None:
         while not self._parar.is_set():
             conexao = self._abrir()
@@ -160,6 +233,7 @@ class FonteOBD(Fonte):
                 self._ler_ate_cair(conexao)
             finally:
                 conexao.fechar()
+                self._atender_pedidos(None)       # quem estava esperando recebe o erro
             if self._ultima is not None:
                 self._publicar({**self._ultima.valores, **REPOUSO})
             if not self._parar.is_set():
@@ -185,6 +259,7 @@ class FonteOBD(Fonte):
     def _ler_ate_cair(self, conexao: Conexao) -> None:
         agenda = montar_agenda(conexao)
         self.canais = [i.canal for i in agenda]
+        lh_direto = "combustivel_lh" in self.canais
         rapidos = [i for i in agenda if i.intervalo <= 0]
         lentos = [i for i in agenda if i.intervalo > 0]
         if not rapidos:
@@ -225,7 +300,9 @@ class FonteOBD(Fonte):
                 return
             if not vazio:
                 self.contagem["ciclos"] += 1
+                estado.update(self.consumo.atualizar(estado, agora, lh_direto))
                 self._publicar(estado)
+            self._atender_pedidos(conexao)
 
 
 def main() -> None:

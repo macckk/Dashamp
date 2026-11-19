@@ -1,7 +1,36 @@
 # Estado do Dashamp
 
-Última tarefa concluída: **F3.1** (`FonteOBD` contra o emulador).
-Próxima: **F3.2** — consumo e códigos de erro.
+Última tarefa concluída: **F3.2** (consumo e códigos de erro).
+Próxima: **F3.3** `[HUMANO]` — primeira leitura no carro.
+
+## Consumo e códigos de erro (F3.2)
+
+- `carputer/consumo.py`: L/h pelo **PID 5E** quando o carro tem; senão **MAF / (AFR × λ)**
+  (λ = razão de equivalência comandada, PID 44, 1,0 sem ela); senão **speed-density** pela MAP,
+  temperatura do ar, rpm, `--cilindrada` e VE 0,85. Daí `consumo_kml` (0 parado, < 3 km/h) e
+  `consumo_medio_kml` (integral por trapézio desde o início; buracos > 2 s não entram).
+- Combustíveis (`--combustivel`): `gasolina` (E0, AFR 14,7, 745 g/L), `gasolina_br` (padrão;
+  gasolina C E27, AFR ≈ 13,1, 757 g/L) e `etanol` (hidratado, AFR ≈ 8,4, 809 g/L). Aproximações:
+  o erro real de um consumo por MAF fica na casa de 5–10% e o corte de injeção em desaceleração não
+  é visto quando o carro não informa a λ. Conferir com o tanque cheio na F3.3+.
+- Canais novos: `lambda`, `consumo_kml`, `consumo_medio_kml`; agenda ganhou `combustivel_lh`
+  (PID 5E, 0,5 s) e `lambda` (1 s).
+- **Códigos de erro**: `FonteOBD.ler_erros()` / `apagar_erros()` devolvem um `Future` atendido na
+  thread da fonte entre dois ciclos (a porta é uma só); sem conexão, falham na hora; se a conexão
+  cai com pedido na fila, ele recebe o erro. Modo 03 (armazenados) e 07 (pendentes); apagar =
+  modo 04, sucesso só com a resposta positiva 0x44.
+- `carputer/tela_erros.py`: tecla **E** no painel com `--obd`. Lista com o sistema em português
+  (P/C/B/U, genérico ou do fabricante) e a descrição do python-OBD (em inglês; traduzir milhares de
+  códigos não cabe). **A** apaga com confirmação (**S**/**N**) e avisos; espera máxima 20 s.
+  Capturas: `docs/img/f32_codigos.png`, `docs/img/f32_consumo.png`.
+- **Emulador**: o cenário `car` vem sem códigos; `scripts/emulador_obd.py --erros P0143,...
+  --pendentes ...` os configura. O ELM327-emulator 4.0.0 manda a resposta do modo 03/07 **sem o
+  byte de quantidade** que a SAE J1979 exige no CAN; o python-OBD lia "43 01 43 ..." como um
+  código só ("C0303"). O lançador troca a função do emulador pela resposta da norma.
+- Aceite no Eee PC (emulador com 3 armazenados + 1 pendente, tema digital80, teclas simuladas
+  dentro do processo): leu os 4 códigos, confirmou, apagou, leu de novo vazio e voltou ao painel
+  com o consumo pelo MAF na tela. 28–30 fps, CPU 13–20%, RSS 57 MB, rpm 14,8 leituras/s.
+  Testes: 150 + 5 pulados no PC; 155 no Eee PC (o do emulador lê e apaga os códigos).
 
 ## FonteOBD (F3.1)
 

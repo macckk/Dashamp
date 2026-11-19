@@ -253,7 +253,7 @@ expondo uma porta serial virtual.
 **Aceite:** com o emulador, o painel mostra os valores e reconecta após o emulador reiniciar.
 Taxa efetiva de `rpm` registrada em `docs/estado.md`.
 
-### [ ] F3.2 Consumo e códigos de erro
+### [x] F3.2 Consumo e códigos de erro
 **Fazer:** consumo instantâneo e médio calculados pelo MAF (ou por MAP + temperatura do ar + rotação,
 com a cilindrada configurável); tela de códigos de erro (ler, mostrar a descrição, apagar com confirmação).
 
